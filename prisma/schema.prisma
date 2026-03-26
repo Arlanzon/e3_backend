@@ -1,0 +1,131 @@
+// =============================================================================
+// schema.prisma
+// Plataforma Gastronómica Local — Oaxaca
+// Modelos: User + UserRestaurant
+// Versión: 1.1.0
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+/// Rol global del usuario en la plataforma.
+/// - CUSTOMER : comensal, puede explorar y reservar
+/// - OWNER    : propietario, puede crear y administrar restaurantes
+/// - MANAGER  : encargado, asignado a un restaurante por un OWNER
+/// - ADMIN    : control interno de la plataforma (moderación, soporte)
+enum UserRole {
+  CUSTOMER
+  OWNER
+  MANAGER
+  ADMIN
+}
+
+/// Rol específico dentro de un restaurante.
+/// Vive en UserRestaurant, no en User, porque un mismo usuario
+/// puede ser OWNER en un restaurante y MANAGER en otro.
+enum StaffRole {
+  OWNER
+  MANAGER
+}
+
+// =============================================================================
+// USER
+// =============================================================================
+
+/// Representa a cualquier persona registrada en la plataforma.
+/// El rol global (UserRole) define el tipo de cuenta.
+/// Los permisos por restaurante se manejan en UserRestaurant.
+model User {
+  // ── Identidad ──────────────────────────────────────────────────────────────
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String   @db.VarChar(100)
+  email        String   @unique @db.VarChar(150)
+  passwordHash String   @db.VarChar(255) @map("password_hash")
+
+  // ── Rol y estado ───────────────────────────────────────────────────────────
+  role         UserRole @default(CUSTOMER)
+
+  /// false = cuenta desactivada. No se eliminan registros para preservar
+  /// el historial de reservaciones y reseñas asociadas.
+  active       Boolean  @default(true)
+
+  // ── Perfil ─────────────────────────────────────────────────────────────────
+  /// URL de Cloudinary. Null hasta que el usuario sube una foto.
+  photoUrl     String?  @db.VarChar(255) @map("photo_url")
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt      @map("updated_at")
+
+  // ── Relaciones ─────────────────────────────────────────────────────────────
+  restaurantStaff UserRestaurant[]
+
+  // Relaciones futuras (se descomentan en su iteración correspondiente):
+  // reservations    Reservation[]
+  // reviews         Review[]
+  // reviewReports   ReviewReport[]
+  // reviewResponses ReviewResponse[]
+
+  @@map("users")
+}
+
+// =============================================================================
+// USER_RESTAURANT
+// =============================================================================
+
+/// Vincula un User con un Restaurant y define su nivel de acceso.
+///
+/// Casos que resuelve:
+///   1. Propietario con múltiples restaurantes:
+///      → mismo userId, múltiples filas con permissionRole = OWNER
+///   2. Encargado asignado a un restaurante específico:
+///      → userId + restaurantId únicos, permissionRole = MANAGER
+///   3. Baja de encargado sin perder historial:
+///      → active = false, el registro permanece
+model UserRestaurant {
+  // ── Identidad ──────────────────────────────────────────────────────────────
+  id             String    @id @default(uuid()) @db.Uuid
+
+  // ── Claves foráneas ────────────────────────────────────────────────────────
+  userId         String    @db.Uuid @map("user_id")
+  restaurantId   String    @db.Uuid @map("restaurant_id")
+
+  // ── Rol dentro del restaurante ─────────────────────────────────────────────
+  permissionRole StaffRole @map("permission_role")
+
+  // ── Estado ─────────────────────────────────────────────────────────────────
+  /// false = el encargado ya no trabaja aquí.
+  /// No se elimina para conservar trazabilidad.
+  active         Boolean   @default(true)
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  // ── Relaciones ─────────────────────────────────────────────────────────────
+  user           User      @relation(fields: [userId], references: [id])
+
+  // Se descomenta cuando se agregue el modelo Restaurant:
+  // restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  // ── Restricciones ──────────────────────────────────────────────────────────
+  /// Un usuario solo puede tener un rol por restaurante.
+  @@unique([userId, restaurantId])
+
+  // ── Índices ────────────────────────────────────────────────────────────────
+  /// "¿qué restaurantes administra este usuario?" — JWT y dashboard
+  @@index([userId, active])
+
+  /// "¿qué staff tiene este restaurante?" — panel de encargados
+  @@index([restaurantId, active])
+
+  @@map("user_restaurants")
+}
