@@ -1,8 +1,8 @@
 // =============================================================================
 // schema.prisma
 // Plataforma Gastronómica Local — Oaxaca
-// Modelos: User + UserRestaurant
-// Versión: 1.1.0
+// Modelos: User + UserRestaurant + Restaurant + BusinessHour
+// Versión: 1.2.0
 // =============================================================================
 
 generator client {
@@ -35,6 +35,24 @@ enum UserRole {
 enum StaffRole {
   OWNER
   MANAGER
+}
+
+/// Estado del restaurante en la plataforma.
+enum RestaurantStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+/// Días de la semana para business_hours.
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
 }
 
 // =============================================================================
@@ -111,10 +129,8 @@ model UserRestaurant {
   createdAt      DateTime  @default(now()) @map("created_at")
 
   // ── Relaciones ─────────────────────────────────────────────────────────────
-  user           User      @relation(fields: [userId], references: [id])
-
-  // Se descomenta cuando se agregue el modelo Restaurant:
-  // restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  user           User       @relation(fields: [userId], references: [id])
+  restaurant     Restaurant @relation(fields: [restaurantId], references: [id])
 
   // ── Restricciones ──────────────────────────────────────────────────────────
   /// Un usuario solo puede tener un rol por restaurante.
@@ -128,4 +144,95 @@ model UserRestaurant {
   @@index([restaurantId, active])
 
   @@map("user_restaurants")
+}
+
+// =============================================================================
+// RESTAURANT
+// =============================================================================
+
+/// Representa un restaurante registrado en la plataforma.
+/// El propietario se vincula a través de UserRestaurant con rol OWNER.
+model Restaurant {
+  // ── Identidad ──────────────────────────────────────────────────────────────
+  id          String           @id @default(uuid()) @db.Uuid
+  name        String           @db.VarChar(150)
+  slug        String           @unique @db.VarChar(160)
+  description String?          @db.Text
+
+  // ── Clasificación ──────────────────────────────────────────────────────────
+  cuisineType String           @db.VarChar(80)  @map("cuisine_type")
+
+  // ── Ubicación ──────────────────────────────────────────────────────────────
+  address     String           @db.Text
+  lat         Decimal          @db.Decimal(9, 6)
+  lng         Decimal          @db.Decimal(9, 6)
+  phone       String?          @db.VarChar(20)
+
+  // ── Configuración de reservaciones ─────────────────────────────────────────
+  capacity                  Int
+  /// Factor reservable: capacity_reservable = capacity * factor
+  reservationCapacityFactor Decimal @default(0.70) @db.Decimal(3, 2) @map("reservation_capacity_factor")
+  /// Duración estándar en minutos. Base de todo cálculo de traslape.
+  reservationDurationMin    Int     @default(90)   @map("reservation_duration_min")
+  /// Anticipación mínima en horas, configurable por restaurante.
+  minAdvanceHours           Int     @default(2)    @map("min_advance_hours")
+  /// Días máximos en el futuro para reservar.
+  maxAdvanceDays            Int     @default(30)   @map("max_advance_days")
+  /// Zona horaria IANA para cálculos del job.
+  timezone                  String  @default("America/Mexico_City") @db.VarChar(50)
+
+  // ── Estado y calificación ──────────────────────────────────────────────────
+  status      RestaurantStatus @default(ACTIVE)
+  /// Promedio desnormalizado. Se actualiza al crear/editar/ocultar reseña.
+  ratingAvg   Decimal?         @db.Decimal(2, 1) @map("rating_avg")
+  ratingCount Int              @default(0)       @map("rating_count")
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt      @map("updated_at")
+
+  // ── Relaciones ─────────────────────────────────────────────────────────────
+  staff         UserRestaurant[]
+  businessHours BusinessHour[]
+
+  // Relaciones futuras (se descomentan en su iteración correspondiente):
+  // closures      SpecialClosure[]
+  // photos        RestaurantPhoto[]
+  // reservations  Reservation[]
+  // reviews       Review[]
+
+  @@map("restaurants")
+}
+
+// =============================================================================
+// BUSINESS HOUR
+// =============================================================================
+
+/// Horario semanal del restaurante.
+/// Un registro por día de la semana.
+/// UNIQUE(restaurantId, dayOfWeek) garantiza un solo horario por día.
+model BusinessHour {
+  // ── Identidad ──────────────────────────────────────────────────────────────
+  id           String    @id @default(uuid()) @db.Uuid
+
+  // ── Claves foráneas ────────────────────────────────────────────────────────
+  restaurantId String    @db.Uuid      @map("restaurant_id")
+
+  // ── Horario ────────────────────────────────────────────────────────────────
+  dayOfWeek    DayOfWeek @map("day_of_week")
+  /// Formato HH:MM — ej: "08:00"
+  openTime     String    @db.VarChar(5) @map("open_time")
+  /// Formato HH:MM — ej: "22:00"
+  closeTime    String    @db.VarChar(5) @map("close_time")
+  /// true = sin servicio ese día
+  isClosed     Boolean   @default(false) @map("is_closed")
+
+  // ── Relaciones ─────────────────────────────────────────────────────────────
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  // ── Restricciones ──────────────────────────────────────────────────────────
+  /// Un solo horario por día por restaurante.
+  @@unique([restaurantId, dayOfWeek])
+
+  @@map("business_hours")
 }
