@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import type { CreateRestaurantInput, UpdateRestaurantInput, ListRestaurantsInput } from './restaurants.schema'
 import type { RestaurantStatus } from '@prisma/client'
+import type { BusinessHourDTO } from './restaurants.schema'
 
 export async function findRestaurantBySlug(slug: string) {
   return prisma.restaurant.findUnique({
@@ -103,5 +104,42 @@ export async function findUserRestaurant(userId: string, restaurantId: string) {
     where: {
       userId_restaurantId: { userId, restaurantId },
     },
+  })
+}
+
+export async function upsertBusinessHours(
+  restaurantId: string,
+  hours: BusinessHourDTO[]
+) {
+  return prisma.$transaction(
+    hours.map((hour) =>
+      prisma.businessHour.upsert({
+        where: {
+          restaurantId_dayOfWeek: {
+            restaurantId,
+            dayOfWeek: hour.dayOfWeek,
+          },
+        },
+        update: {
+          openTimeMin: hour.openTimeMin,
+          closeTimeMin: hour.closeTimeMin,
+          isClosed: hour.isClosed,
+        },
+        create: {
+          restaurantId,
+          dayOfWeek: hour.dayOfWeek,
+          openTimeMin: hour.openTimeMin,
+          closeTimeMin: hour.closeTimeMin,
+          isClosed: hour.isClosed,
+        },
+      })
+    )
+  )
+}
+
+export async function findBusinessHours(restaurantId: string) {
+  return prisma.businessHour.findMany({
+    where: { restaurantId },
+    orderBy: { dayOfWeek: 'asc' },
   })
 }

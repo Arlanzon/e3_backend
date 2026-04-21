@@ -4,6 +4,36 @@ import { validateCredentials } from '@/features/users/users.service'
 import { signToken } from '@/lib/jwt'
 import { handleError } from '@/lib/handle-error'
 
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Iniciar sesion
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: fernando@test.com
+ *               password:
+ *                 type: string
+ *                 example: "12345678"
+ *     responses:
+ *       200:
+ *         description: Login exitoso — devuelve token JWT
+ *       401:
+ *         description: Credenciales incorrectas
+ *       403:
+ *         description: Cuenta desactivada
+ */
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()

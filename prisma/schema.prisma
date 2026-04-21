@@ -212,27 +212,20 @@ model Restaurant {
 /// Un registro por día de la semana.
 /// UNIQUE(restaurantId, dayOfWeek) garantiza un solo horario por día.
 model BusinessHour {
-  // ── Identidad ──────────────────────────────────────────────────────────────
   id           String    @id @default(uuid()) @db.Uuid
-
-  // ── Claves foráneas ────────────────────────────────────────────────────────
-  restaurantId String    @db.Uuid      @map("restaurant_id")
-
-  // ── Horario ────────────────────────────────────────────────────────────────
+  restaurantId String    @db.Uuid @map("restaurant_id")
   dayOfWeek    DayOfWeek @map("day_of_week")
-  /// Formato HH:MM — ej: "08:00"
-  openTime     String    @db.VarChar(5) @map("open_time")
-  /// Formato HH:MM — ej: "22:00"
-  closeTime    String    @db.VarChar(5) @map("close_time")
-  /// true = sin servicio ese día
+
+  /// Minutos desde medianoche. Ej: 480 = 08:00
+  openTimeMin  Int       @map("open_time_min")
+
+  /// Minutos desde medianoche. Ej: 1320 = 22:00
+  closeTimeMin Int       @map("close_time_min")
+
   isClosed     Boolean   @default(false) @map("is_closed")
 
-  // ── Relaciones ─────────────────────────────────────────────────────────────
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
 
-  // ── Restricciones ──────────────────────────────────────────────────────────
-  /// Un solo horario por día por restaurante.
   @@unique([restaurantId, dayOfWeek])
-
   @@map("business_hours")
 }

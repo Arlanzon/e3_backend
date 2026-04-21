@@ -4,15 +4,60 @@ import { createRestaurantService, listRestaurantsService } from '@/features/rest
 import { requireAuth, requireRole } from '@/lib/auth'
 import { handleError } from '@/lib/handle-error'
 
+/**
+ * @swagger
+ * /restaurants:
+ *   get:
+ *     tags: [Restaurants]
+ *     summary: Listar restaurantes activos
+ *     parameters:
+ *       - in: query
+ *         name: cuisine
+ *         schema:
+ *           type: string
+ *         description: Filtrar por tipo de cocina
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *     responses:
+ *       200:
+ *         description: Lista de restaurantes con paginacion
+ *   post:
+ *     tags: [Restaurants]
+ *     summary: Crear nuevo restaurante
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Restaurant'
+ *     responses:
+ *       201:
+ *         description: Restaurante creado
+ *       401:
+ *         description: No autenticado
+ *       409:
+ *         description: Slug ya en uso
+ */
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
 
     const parsed = listRestaurantsSchema.safeParse({
-      cuisine: searchParams.get('cuisine'),
-      status: searchParams.get('status'),
-      page: searchParams.get('page'),
-      limit: searchParams.get('limit'),
+    cuisine: searchParams.get('cuisine') || undefined,
+    status: searchParams.get('status') || undefined,
+    page: searchParams.get('page') || undefined,
+    limit: searchParams.get('limit') || undefined,
     })
 
     if (!parsed.success) {
