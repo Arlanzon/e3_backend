@@ -93,6 +93,7 @@ const options: swaggerJsdoc.Options = {
       { name: 'Auth', description: 'Autenticacion y sesion' },
       { name: 'Users', description: 'Gestion de usuarios' },
       { name: 'Restaurants', description: 'Gestion de restaurantes' },
+      { name: 'Reservations', description: 'Gestion de reservaciones' },
     ],
   },
   apis: ['./app/api/v1/**/*.ts'],
