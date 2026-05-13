@@ -112,6 +112,7 @@ export async function updateReservationStatus(
     confirmedAt?: Date
     rejectedAt?: Date
     cancelledAt?: Date
+    completedAt?: Date
   }
 ) {
   return prisma.reservation.update({

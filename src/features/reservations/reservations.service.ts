@@ -315,6 +315,42 @@ import {
   
     return formatReservation(updated)
   }
+
+  // Completar
+
+  export async function completeReservationService(
+    reservationId: string,
+    userId: string
+  ) {
+    const reservation = await findReservationById(reservationId)
+
+    if (!reservation) {
+      throw new AppError('RESERVATION_NOT_FOUND', 'Reservacion no encontrada', 404)
+    }
+
+    if (reservation.status !== 'CONFIRMED') {
+      throw new AppError('INVALID_STATUS', 'Solo se pueden completar reservaciones confirmadas', 400)
+    }
+
+    const membership = await prisma.userRestaurant.findUnique({
+      where: { userId_restaurantId: { userId, restaurantId: reservation.restaurantId } },
+    })
+
+    if (
+      !membership ||
+      !membership.active ||
+      (membership.permissionRole !== 'OWNER' && membership.permissionRole !== 'MANAGER')
+    ) {
+      throw new AppError('FORBIDDEN', 'No tienes permiso', 403)
+    }
+
+    const updated = await updateReservationStatus(reservationId, {
+      status:      'COMPLETED',
+      completedAt: new Date(),
+    })
+
+    return formatReservation(updated)
+  }
   
   // ── Cancelar ───────────────────────────────────────────────────────────────
   
