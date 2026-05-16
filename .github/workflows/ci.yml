@@ -1,0 +1,42 @@
+name: CI - Plataforma Gastronomica Local
+
+on:
+  push:
+    branches: [master, cierre-mvp-backend]
+  pull_request:
+    branches: [master, cierre-mvp-backend]
+
+jobs:
+  ci:
+    name: Install · TypeCheck · Test · Build
+    runs-on: ubuntu-latest
+
+    env:
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      JWT_EXPIRES_IN: 30m
+      NEXT_TELEMETRY_DISABLED: 1
+
+    steps:
+      - name: Checkout codigo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Generar cliente Prisma
+        run: npx prisma generate
+
+      - name: Verificar tipos TypeScript
+        run: npx tsc --noEmit
+
+      - name: Ejecutar tests
+        run: npm test
+
+      - name: Build de produccion
+        run: npm run build
