@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import type { SpecialClosure } from '@prisma/client'
 import { createClosureSchema } from '@/features/restaurants/closures.schema'
 import {
   createClosureService,
@@ -88,7 +89,7 @@ export async function GET(
     const { id } = await params
     const closures = await getClosuresService(id)
 
-    const formatted = closures.map((c) => ({
+    const formatted = closures.map((c: SpecialClosure) => ({
       id: c.id,
       date: c.date,
       isClosed: c.isClosed,
