@@ -90,7 +90,7 @@ export async function GET(
 
     type ClosureItem = Awaited<ReturnType<typeof getClosuresService>>[number]
 
-    const formatted = closures.map((c) => ({
+    const formatted = closures.map((c: ClosureItem) => ({
       id: c.id,
       date: c.date,
       isClosed: c.isClosed,
