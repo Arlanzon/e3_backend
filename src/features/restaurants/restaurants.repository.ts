@@ -1,7 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import type { CreateRestaurantInput, UpdateRestaurantInput, ListRestaurantsInput } from './restaurants.schema'
-import type { RestaurantStatus } from '@prisma/client'
 import type { BusinessHourDTO } from './restaurants.schema'
+
+type RestaurantStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'
 
 export async function findRestaurantBySlug(slug: string) {
   return prisma.restaurant.findUnique({

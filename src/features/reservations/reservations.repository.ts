@@ -1,5 +1,12 @@
 import { prisma } from '@/lib/prisma'
-import type { ReservationStatus } from '@prisma/client'
+
+type ReservationStatus =
+  | 'PENDING'
+  | 'CONFIRMED'
+  | 'REJECTED'
+  | 'CANCELLED'
+  | 'COMPLETED'
+  | 'EXPIRED'
 
 export async function createReservation(data: {
   userId: string

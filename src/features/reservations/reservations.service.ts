@@ -14,7 +14,14 @@ import {
     RejectReservationInput,
     ListReservationsInput,
   } from './reservations.schema'
-  import type { ReservationStatus } from '@prisma/client'
+
+  type ReservationStatus =
+    | 'PENDING'
+    | 'CONFIRMED'
+    | 'REJECTED'
+    | 'CANCELLED'
+    | 'COMPLETED'
+    | 'EXPIRED'
   
   // ── Helper interno ─────────────────────────────────────────────────────────
   

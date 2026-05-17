@@ -1,5 +1,6 @@
 import { SignJWT, jwtVerify } from 'jose'
-import type { UserRole } from '@prisma/client'
+
+type UserRole = 'CUSTOMER' | 'OWNER' | 'MANAGER' | 'ADMIN'
 
 const jwtSecret = process.env.JWT_SECRET
 
