@@ -1,7 +1,11 @@
 import { prisma } from '@/lib/prisma'
-import type { Prisma } from '@prisma/client'
 import type { CreateRestaurantInput, UpdateRestaurantInput, ListRestaurantsInput } from './restaurants.schema'
 import type { BusinessHourDTO } from './restaurants.schema'
+
+type TransactionClient = Omit<
+  typeof prisma,
+  '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
+>
 
 type RestaurantStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'
 
@@ -74,7 +78,7 @@ export async function createRestaurant(
 ) {
   const { userId, ...restaurantData } = data
 
-  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+  return prisma.$transaction(async (tx: TransactionClient) => {
     const restaurant = await tx.restaurant.create({
       data: restaurantData,
     })
@@ -198,7 +202,7 @@ export async function createPhoto(
   restaurantId: string,
   data: { url: string; isPrimary: boolean; order: number }
 ) {
-  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+  return prisma.$transaction(async (tx: TransactionClient) => {
     if (data.isPrimary) {
       await tx.restaurantPhoto.updateMany({
         where: { restaurantId },
@@ -234,7 +238,7 @@ export async function updatePhoto(
   restaurantId: string,
   data: { isPrimary?: boolean; order?: number }
 ) {
-  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+  return prisma.$transaction(async (tx: TransactionClient) => {
     if (data.isPrimary) {
       await tx.restaurantPhoto.updateMany({
         where: { restaurantId },
@@ -250,7 +254,7 @@ export async function updatePhoto(
 }
 
 export async function deletePhoto(id: string, restaurantId: string) {
-  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+  return prisma.$transaction(async (tx: TransactionClient) => {
     const photo = await tx.restaurantPhoto.findUnique({
       where: { id },
     })
