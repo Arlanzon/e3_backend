@@ -1,75 +1,312 @@
 # E3 Backend
 
 Backend REST para una plataforma gastronomica local enfocada en descubrimiento,
-gestion y reservaciones de restaurantes. Esta construido con Next.js App Router,
-Prisma, PostgreSQL en Neon, autenticacion JWT, validacion con Zod y documentacion
-OpenAPI/Swagger.
+gestion, reservaciones y resenas de restaurantes. El proyecto usa Next.js App
+Router como capa HTTP, TypeScript estricto, Prisma 7, PostgreSQL y autenticacion
+JWT.
 
-## Stack
+## Tipo de Arquitectura
 
-- Next.js 16 con App Router y Route Handlers.
-- TypeScript en modo estricto.
-- Prisma 7 con PostgreSQL.
-- Neon como proveedor de base de datos serverless.
-- JWT con `jose`.
-- Zod para validacion de entrada.
-- Swagger/OpenAPI generado desde comentarios JSDoc en `app/api/v1`.
-- Arquitectura por feature: Route -> Service -> Repository -> Prisma.
+El sistema esta implementado como un monolito modular. No utiliza una
+arquitectura de microservicios: las capacidades de negocio conviven en una sola
+aplicacion Next.js, desplegable como una unidad, pero estan separadas por
+modulos funcionales bajo `src/features`.
 
-## Arquitectura
+La organizacion interna sigue una separacion por capas:
+
+```text
+Route Handler -> Schema -> Service -> Repository -> Prisma -> PostgreSQL
+```
+
+Esta estructura permite mantener limites claros entre API HTTP, validacion,
+reglas de negocio y persistencia, sin introducir comunicacion entre servicios
+independientes.
+
+## Stack de Desarrollo
+
+| Capa | Tecnologia | Uso en el proyecto |
+| --- | --- | --- |
+| Frontend | Next.js 16 App Router | Estructura base de aplicacion y rutas bajo `app`. |
+| Frontend | React 19 | Base de UI para paginas y Swagger UI embebido. |
+| Frontend | Estado local y consumo HTTP | Las vistas consumen Route Handlers internos bajo `/api/v1`. |
+| Frontend | Tailwind CSS 4 y PostCSS | Estilos globales y pipeline CSS del proyecto. |
+| Backend | Node.js | Runtime de la aplicacion Next.js. |
+| Backend | Next.js Route Handlers | API REST versionada en `app/api/v1`. |
+| Backend | TypeScript 6 | Tipado estricto para rutas, servicios, repositorios y utilidades. |
+| Backend | Prisma 7 | ORM y cliente de acceso a datos. |
+| Backend | Zod 4 | Validacion de payloads, queries y DTOs de entrada. |
+| Backend | JWT con `jose` | Firma, verificacion y extraccion de tokens Bearer. |
+| Backend | `bcryptjs` | Hash y comparacion de contrasenas. |
+| Backend | Swagger/OpenAPI | Documentacion generada desde anotaciones JSDoc en rutas. |
+| Base de Datos y DevOps | PostgreSQL | Motor relacional definido en `prisma/schema.prisma`. |
+| Base de Datos y DevOps | Neon, `@prisma/adapter-neon`, `@prisma/adapter-pg`, `pg` | Conectividad serverless y adaptadores Prisma para PostgreSQL. |
+| Base de Datos y DevOps | Prisma Migrate y Prisma Generate | Evolucion del schema y generacion del cliente. |
+| Base de Datos y DevOps | Dockerfile | Empaquetado para ejecucion en contenedor. |
+| Base de Datos y DevOps | Vitest | Suite de pruebas unitarias e integracion. |
+| Base de Datos y DevOps | ESLint | Analisis estatico del codigo. |
+| Base de Datos y DevOps | Vercel compatible | Build con `npm run build`, generacion Swagger y Next.js. |
+
+## Diagrama de Arquitectura
+
+```mermaid
+graph TD
+  subgraph Client["Capa de Cliente / Frontend"]
+    UI["Paginas y componentes React"]
+    SwaggerUI["Swagger UI"]
+    State["Estado local de UI"]
+    APIClient["Consumo HTTP /api/v1"]
+  end
+
+  subgraph Server["Capa de Servidor / Backend"]
+    Routes["Next.js Route Handlers<br/>app/api/v1/**/route.ts"]
+    Validation["Validacion Zod<br/>schemas por feature"]
+    Auth["Auth Middleware<br/>requireAuth / requireRole"]
+    Services["Servicios de dominio<br/>reglas de negocio"]
+    Repositories["Repositorios<br/>consultas y mutaciones"]
+    PrismaClient["Prisma Client<br/>src/lib/prisma.ts"]
+    ErrorHandling["Manejo de errores<br/>AppError / handleError"]
+    SwaggerGen["Generador OpenAPI<br/>swagger-jsdoc"]
+  end
+
+  subgraph External["Capas Externas"]
+    PostgreSQL[("PostgreSQL / Neon")]
+    JWT["JWT Bearer<br/>jose"]
+    Passwords["Password hashing<br/>bcryptjs"]
+  end
+
+  UI --> State
+  UI --> APIClient
+  SwaggerUI --> APIClient
+  APIClient --> Routes
+  Routes --> Validation
+  Routes --> Auth
+  Routes --> Services
+  Routes --> ErrorHandling
+  Auth --> JWT
+  Services --> Repositories
+  Services --> Passwords
+  Repositories --> PrismaClient
+  PrismaClient --> PostgreSQL
+  SwaggerGen --> SwaggerUI
+  Routes --> SwaggerGen
+```
+
+## Modelo Entidad-Relacion
+
+```mermaid
+erDiagram
+  USER {
+    String id PK
+    String name
+    String email UK
+    String passwordHash
+    UserRole role
+    Boolean active
+    String photoUrl
+    DateTime createdAt
+    DateTime updatedAt
+  }
+
+  USER_RESTAURANT {
+    String id PK
+    String userId FK
+    String restaurantId FK
+    StaffRole permissionRole
+    Boolean active
+    DateTime createdAt
+  }
+
+  RESTAURANT {
+    String id PK
+    String name
+    String slug UK
+    String description
+    String cuisineType
+    String address
+    Decimal lat
+    Decimal lng
+    String phone
+    Int capacity
+    Decimal reservationCapacityFactor
+    Int reservationDurationMin
+    Int minAdvanceHours
+    Int maxAdvanceDays
+    String timezone
+    RestaurantStatus status
+    Decimal ratingAvg
+    Int ratingCount
+    DateTime createdAt
+    DateTime updatedAt
+  }
+
+  BUSINESS_HOUR {
+    String id PK
+    String restaurantId FK
+    DayOfWeek dayOfWeek
+    Boolean isClosed
+    Int openTimeMin
+    Int closeTimeMin
+  }
+
+  SPECIAL_CLOSURE {
+    String id PK
+    String restaurantId FK
+    DateTime date
+    Boolean isClosed
+    Int openTimeMin
+    Int closeTimeMin
+    String reason
+    DateTime createdAt
+  }
+
+  RESTAURANT_PHOTO {
+    String id PK
+    String restaurantId FK
+    String url
+    Boolean isPrimary
+    Int order
+    DateTime createdAt
+  }
+
+  RESERVATION {
+    String id PK
+    String userId FK
+    String restaurantId FK
+    DateTime date
+    Int timeMin
+    Int numPersons
+    ReservationStatus status
+    String notes
+    String rejectionReason
+    Int snapshotCapacityTotal
+    Decimal snapshotCapacityFactor
+    Int snapshotDurationMin
+    DateTime confirmedAt
+    DateTime rejectedAt
+    DateTime cancelledAt
+    DateTime completedAt
+    DateTime expiredAt
+    DateTime createdAt
+    DateTime updatedAt
+  }
+
+  REVIEW {
+    String id PK
+    String reservationId FK
+    String userId FK
+    String restaurantId FK
+    Int rating
+    String comment
+    ReviewStatus status
+    String hiddenReason
+    String hiddenBy FK
+    DateTime hiddenAt
+    DateTime editableUntil
+    DateTime createdAt
+    DateTime updatedAt
+  }
+
+  REVIEW_RESPONSE {
+    String id PK
+    String reviewId FK
+    String responderId FK
+    String restaurantId FK
+    String content
+    Boolean isEdited
+    DateTime createdAt
+    DateTime updatedAt
+  }
+
+  REVIEW_REPORT {
+    String id PK
+    String reviewId FK
+    String userId FK
+    String reason
+    DateTime createdAt
+  }
+
+  USER ||--o{ USER_RESTAURANT : has_staff_membership
+  RESTAURANT ||--o{ USER_RESTAURANT : has_staff
+  USER ||--o{ RESERVATION : creates
+  RESTAURANT ||--o{ RESERVATION : receives
+  RESTAURANT ||--o{ BUSINESS_HOUR : defines
+  RESTAURANT ||--o{ SPECIAL_CLOSURE : defines
+  RESTAURANT ||--o{ RESTAURANT_PHOTO : owns
+  USER ||--o{ REVIEW : writes
+  RESTAURANT ||--o{ REVIEW : receives
+  RESERVATION ||--o| REVIEW : produces
+  REVIEW ||--o| REVIEW_RESPONSE : has_response
+  USER ||--o{ REVIEW_RESPONSE : responds
+  RESTAURANT ||--o{ REVIEW_RESPONSE : owns_response
+  REVIEW ||--o{ REVIEW_REPORT : receives_report
+  USER ||--o{ REVIEW_REPORT : reports
+  USER ||--o{ REVIEW : hides
+```
+
+## Modulos
+
+| Modulo | Responsabilidad |
+| --- | --- |
+| `auth` | Registro, login y claims del usuario autenticado. |
+| `users` | Perfil autenticado y endpoint base de administracion. |
+| `restaurants` | Listado, detalle, creacion, actualizacion y configuracion operativa. |
+| `business hours` | Horarios semanales por restaurante. |
+| `closures` | Cierres especiales por fecha. |
+| `photos` | Galeria y metadata de fotos del restaurante. |
+| `reservations` | Creacion, consulta y flujo de estados de reservaciones. |
+| `reviews` | Creacion, edicion y consulta de resenas visibles. |
+| `review responses` | Respuesta del restaurante a una resena. |
+| `docs` | OpenAPI JSON y Swagger UI. |
+
+## Flujo de Capas
 
 ```text
 app/api/v1/**/route.ts
+  -> src/features/<module>/<module>.schema.ts
   -> src/features/<module>/<module>.service.ts
-    -> src/features/<module>/<module>.repository.ts
-      -> src/lib/prisma.ts
-        -> PostgreSQL / Neon
+  -> src/features/<module>/<module>.repository.ts
+  -> src/lib/prisma.ts
+  -> PostgreSQL
 ```
 
-Responsabilidades principales:
+Responsabilidades:
 
-- `Route`: parsea request, valida JSON/query params con Zod, exige autenticacion cuando aplica y devuelve respuestas HTTP.
-- `Service`: concentra reglas de negocio, permisos, estados validos y errores de dominio con `AppError`.
-- `Repository`: encapsula consultas y mutaciones Prisma.
-- `Prisma`: cliente compartido configurado con `@prisma/adapter-pg` y `pg`.
+- `Route Handler`: recibe HTTP, parsea JSON/query params, ejecuta validacion, aplica autenticacion y serializa respuestas.
+- `Schema`: define contratos de entrada con Zod y DTOs derivados.
+- `Service`: concentra reglas de negocio, permisos, transiciones de estado y errores de dominio.
+- `Repository`: encapsula operaciones Prisma sin mezclar reglas de negocio.
+- `Prisma Client`: adapter hacia PostgreSQL y Neon.
 
-## Modulos implementados
+## Roles y Estados
 
-- `auth`: registro, login, claims del token actual.
-- `users`: perfil autenticado y base para administracion de usuarios.
-- `restaurants`: listado, detalle, creacion y actualizacion de restaurantes.
-- `business hours`: horarios semanales por restaurante.
-- `closures`: cierres especiales por fecha.
-- `photos`: galeria de fotos por restaurante.
-- `reservations`: creacion, listado, detalle y flujo de estados.
-- `reviews`: creacion, edicion y listado de resenas visibles.
-- `review responses`: respuesta del restaurante a una resena y edicion posterior.
+| Enum | Valores |
+| --- | --- |
+| `UserRole` | `CUSTOMER`, `OWNER`, `MANAGER`, `ADMIN` |
+| `StaffRole` | `OWNER`, `MANAGER` |
+| `RestaurantStatus` | `ACTIVE`, `INACTIVE`, `SUSPENDED` |
+| `DayOfWeek` | `MONDAY`, `TUESDAY`, `WEDNESDAY`, `THURSDAY`, `FRIDAY`, `SATURDAY`, `SUNDAY` |
+| `ReservationStatus` | `PENDING`, `CONFIRMED`, `REJECTED`, `CANCELLED`, `COMPLETED`, `EXPIRED` |
+| `ReviewStatus` | `VISIBLE`, `PENDING_MODERATION`, `HIDDEN` |
 
-## Roles y permisos
+## Endpoints Principales
 
-Roles globales en `UserRole`:
+| Recurso | Rutas principales |
+| --- | --- |
+| Auth | `POST /api/v1/auth/register`, `POST /api/v1/auth/login`, `GET /api/v1/auth/me` |
+| Users | `GET /api/v1/users/me`, `GET /api/v1/users` |
+| Restaurants | `GET /api/v1/restaurants`, `POST /api/v1/restaurants`, `GET /api/v1/restaurants/{id}`, `PATCH /api/v1/restaurants/{id}` |
+| Business Hours | `GET /api/v1/restaurants/{id}/hours`, `PUT /api/v1/restaurants/{id}/hours` |
+| Closures | `GET /api/v1/restaurants/{id}/closures`, `POST /api/v1/restaurants/{id}/closures`, `DELETE /api/v1/restaurants/{id}/closures/{closureId}` |
+| Photos | `GET /api/v1/restaurants/{id}/photos`, `POST /api/v1/restaurants/{id}/photos`, `PATCH /api/v1/restaurants/{id}/photos/{photoId}`, `DELETE /api/v1/restaurants/{id}/photos/{photoId}` |
+| Reservations | `GET /api/v1/reservations`, `POST /api/v1/reservations`, `GET /api/v1/reservations/{id}`, `PATCH /api/v1/reservations/{id}/confirm`, `PATCH /api/v1/reservations/{id}/reject`, `PATCH /api/v1/reservations/{id}/cancel`, `PATCH /api/v1/reservations/{id}/complete` |
+| Restaurant Reservations | `GET /api/v1/restaurants/{id}/reservations` |
+| Reviews | `POST /api/v1/reviews`, `PATCH /api/v1/reviews/{id}`, `GET /api/v1/restaurants/{id}/reviews` |
+| Review Responses | `POST /api/v1/reviews/{id}/response`, `PATCH /api/v1/reviews/{id}/response` |
+| Docs | `GET /api/v1/docs`, `GET /api/v1/docs/ui` |
 
-- `CUSTOMER`: usuario comensal. Puede registrarse, iniciar sesion, consultar restaurantes, crear reservaciones, cancelar sus reservaciones confirmadas, crear resenas sobre reservaciones completadas y editar sus propias resenas dentro de la ventana permitida.
-- `OWNER`: propietario. Puede crear restaurantes y operar restaurantes donde tenga membership activo.
-- `MANAGER`: encargado. Puede operar restaurantes donde tenga membership activo.
-- `ADMIN`: rol interno. Actualmente tiene acceso al endpoint base de listado de usuarios.
+## Variables de Entorno
 
-Permisos por restaurante en `UserRestaurant`:
-
-- `permissionRole`: `OWNER` o `MANAGER`.
-- `active`: debe ser `true` para operar recursos del restaurante.
-
-Reglas relevantes:
-
-- Las rutas protegidas usan `Authorization: Bearer <token>`.
-- La creacion y modificacion de horarios, cierres, fotos, datos del restaurante y reservaciones del restaurante requiere membership activo.
-- Confirmar, rechazar y completar reservaciones requiere membership activo en el restaurante.
-- Responder resenas requiere rol global `OWNER` o `MANAGER` y membership activo en el restaurante.
-- Un `CUSTOMER` no puede responder resenas.
-
-## Variables de entorno
-
-Crea un archivo `.env` tomando como base `.env.example`.
+Crear `.env` a partir de `.env.example`.
 
 ```env
 DATABASE_URL="postgresql://usuario:password@host/dbname?sslmode=require"
@@ -78,14 +315,7 @@ JWT_SECRET="cambia-este-secreto"
 JWT_EXPIRES_IN="30m"
 ```
 
-Notas:
-
-- `DATABASE_URL` es requerida por Prisma y por `src/lib/prisma.ts`.
-- `DIRECT_URL` existe en `.env.example` y puede usarse para flujos de base de datos que requieran conexion directa.
-- `JWT_SECRET` es requerido al iniciar la app.
-- `JWT_EXPIRES_IN` es opcional; si no se define, el token expira en `30m`.
-
-## Instalacion
+## Instalacion y Ejecucion
 
 ```bash
 npm install
@@ -108,185 +338,21 @@ http://localhost:3000/api/v1
 
 ## Scripts
 
-```bash
-npm run dev      # servidor de desarrollo Next.js
-npm run build    # build de produccion
-npm run start    # iniciar build de produccion
-npm run lint     # ejecutar ESLint
-```
+| Script | Descripcion |
+| --- | --- |
+| `npm run dev` | Inicia Next.js en desarrollo. |
+| `npm run generate:swagger` | Genera `public/openapi.json` desde anotaciones Swagger. |
+| `npm run build` | Genera Swagger y ejecuta build de produccion Next.js. |
+| `npm run start` | Inicia el servidor con el build de produccion. |
+| `npm run lint` | Ejecuta ESLint. |
+| `npm test` | Ejecuta Vitest en modo run. |
+| `npm run test:watch` | Ejecuta Vitest en modo watch. |
+| `npm run test:coverage` | Ejecuta pruebas con reporte de cobertura. |
 
-Comandos Prisma utiles:
-
-```bash
-npx prisma generate
-npx prisma migrate dev
-npx prisma studio
-```
-
-## Swagger
-
-La especificacion OpenAPI se genera desde los comentarios `@swagger` dentro de
-`app/api/v1/**/*.ts`.
+## Documentacion OpenAPI
 
 - JSON OpenAPI: `GET /api/v1/docs`
 - Swagger UI: `GET /api/v1/docs/ui`
 
-En Swagger UI se puede usar el boton de autorizacion con el token devuelto por
-`POST /api/v1/auth/login`.
-
-## Endpoints principales
-
-Los endpoints listados existen en `app/api/v1`.
-
-### Auth
-
-| Metodo | Ruta | Descripcion | Auth |
-| --- | --- | --- | --- |
-| `POST` | `/api/v1/auth/register` | Registrar usuario `CUSTOMER` | No |
-| `POST` | `/api/v1/auth/login` | Iniciar sesion y obtener JWT | No |
-| `GET` | `/api/v1/auth/me` | Obtener claims del token actual | Si |
-
-### Users
-
-| Metodo | Ruta | Descripcion | Auth |
-| --- | --- | --- | --- |
-| `GET` | `/api/v1/users/me` | Obtener perfil desde base de datos | Si |
-| `GET` | `/api/v1/users` | Listado base de usuarios, reservado a `ADMIN` | Si |
-
-### Restaurants
-
-| Metodo | Ruta | Descripcion | Auth |
-| --- | --- | --- | --- |
-| `GET` | `/api/v1/restaurants` | Listar restaurantes con filtros y paginacion | No |
-| `POST` | `/api/v1/restaurants` | Crear restaurante | Si |
-| `GET` | `/api/v1/restaurants/{id}` | Obtener restaurante por ID | No |
-| `PATCH` | `/api/v1/restaurants/{id}` | Actualizar restaurante | Si |
-
-### Business Hours
-
-| Metodo | Ruta | Descripcion | Auth |
-| --- | --- | --- | --- |
-| `GET` | `/api/v1/restaurants/{id}/hours` | Obtener horarios semanales | No |
-| `PUT` | `/api/v1/restaurants/{id}/hours` | Reemplazar horarios semanales | Si |
-
-### Closures
-
-| Metodo | Ruta | Descripcion | Auth |
-| --- | --- | --- | --- |
-| `GET` | `/api/v1/restaurants/{id}/closures` | Listar cierres especiales | Si |
-| `POST` | `/api/v1/restaurants/{id}/closures` | Crear cierre especial | Si |
-| `DELETE` | `/api/v1/restaurants/{id}/closures/{closureId}` | Eliminar cierre especial | Si |
-
-### Photos
-
-| Metodo | Ruta | Descripcion | Auth |
-| --- | --- | --- | --- |
-| `GET` | `/api/v1/restaurants/{id}/photos` | Listar fotos del restaurante | No |
-| `POST` | `/api/v1/restaurants/{id}/photos` | Agregar foto | Si |
-| `PATCH` | `/api/v1/restaurants/{id}/photos/{photoId}` | Actualizar metadata de foto | Si |
-| `DELETE` | `/api/v1/restaurants/{id}/photos/{photoId}` | Eliminar foto | Si |
-
-### Reservations
-
-| Metodo | Ruta | Descripcion | Auth |
-| --- | --- | --- | --- |
-| `GET` | `/api/v1/reservations` | Listar mis reservaciones | Si |
-| `POST` | `/api/v1/reservations` | Crear reservacion en estado `PENDING` | Si |
-| `GET` | `/api/v1/reservations/{id}` | Ver detalle de reservacion | Si |
-| `PATCH` | `/api/v1/reservations/{id}/cancel` | Cancelar reservacion confirmada propia | Si |
-| `PATCH` | `/api/v1/reservations/{id}/confirm` | Confirmar reservacion pendiente | Si |
-| `PATCH` | `/api/v1/reservations/{id}/reject` | Rechazar reservacion pendiente | Si |
-| `PATCH` | `/api/v1/reservations/{id}/complete` | Marcar reservacion confirmada como completada | Si |
-| `GET` | `/api/v1/restaurants/{id}/reservations` | Listar reservaciones de un restaurante | Si |
-
-### Reviews
-
-| Metodo | Ruta | Descripcion | Auth |
-| --- | --- | --- | --- |
-| `POST` | `/api/v1/reviews` | Crear resena sobre una reservacion completada | Si |
-| `PATCH` | `/api/v1/reviews/{id}` | Editar resena propia dentro de la ventana permitida | Si |
-| `GET` | `/api/v1/restaurants/{id}/reviews` | Listar resenas visibles de un restaurante | No |
-
-### Review Responses
-
-| Metodo | Ruta | Descripcion | Auth |
-| --- | --- | --- | --- |
-| `POST` | `/api/v1/reviews/{id}/response` | Responder una resena como `OWNER` o `MANAGER` | Si |
-| `PATCH` | `/api/v1/reviews/{id}/response` | Editar respuesta existente | Si |
-
-### Docs
-
-| Metodo | Ruta | Descripcion | Auth |
-| --- | --- | --- | --- |
-| `GET` | `/api/v1/docs` | Especificacion OpenAPI en JSON | No |
-| `GET` | `/api/v1/docs/ui` | Swagger UI | No |
-
-## Flujo de reservaciones
-
-Estados implementados:
-
-```text
-PENDING -> CONFIRMED -> COMPLETED
-PENDING -> REJECTED
-CONFIRMED -> CANCELLED
-```
-
-Reglas principales:
-
-- La reservacion valida restaurante activo, horarios, cierres especiales, anticipacion minima/maxima y capacidad reservable.
-- La confirmacion revalida disponibilidad antes de cambiar estado.
-- La cancelacion solo la realiza el cliente propietario de la reservacion y requiere al menos 2 horas de anticipacion.
-- El restaurante puede consultar y gestionar reservaciones si el usuario tiene membership activo.
-
-## Flujo de resenas
-
-- Una resena se crea solo sobre una reservacion completada.
-- Solo el usuario propietario de la reservacion puede crear la resena.
-- Existe una ventana de 30 dias para crear resena.
-- La resena puede editarse durante 7 dias si sigue visible.
-- Solo existe una resena por reservacion.
-- Solo existe una respuesta por resena.
-- La respuesta de restaurante requiere `OWNER` o `MANAGER` global y membership activo.
-
-## Estructura del proyecto
-
-```text
-app/api/v1
-  auth/
-  docs/
-  reservations/
-  restaurants/
-  reviews/
-  users/
-
-src/features
-  reservations/
-  restaurants/
-  reviews/
-  users/
-
-src/lib
-  auth.ts
-  errors.ts
-  handle-error.ts
-  jwt.ts
-  prisma.ts
-  swagger.ts
-
-prisma
-  schema.prisma
-  migrations/
-```
-
-## Roadmap post-MVP
-
-- Completar administracion de usuarios para `ADMIN`.
-- Moderacion de resenas, reportes y estados `PENDING_MODERATION` / `HIDDEN`.
-- Invitacion y gestion formal de staff por restaurante.
-- Subida real de imagenes a un storage externo en vez de registrar solo URL.
-- Notificaciones para confirmacion, rechazo, cancelacion y recordatorios.
-- Expiracion automatica de reservaciones pendientes.
-- Tests automatizados por capa: servicios, repositorios y rutas criticas.
-- Observabilidad: logs estructurados, tracing y metricas de errores.
-- Paginacion, filtros y ordenamiento mas extensos para paneles operativos.
-- Hardening de seguridad: rate limiting, rotacion de secretos y politicas de CORS.
+Swagger UI permite usar el token emitido por `POST /api/v1/auth/login` como
+`Authorization: Bearer <token>`.
