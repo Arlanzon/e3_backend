@@ -94,7 +94,15 @@ import {
     // Horario del dia
     const days = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY']
     const dayOfWeek   = days[date.getUTCDay()]!
-    const businessHour = restaurant.businessHours.find((h) => h.dayOfWeek === dayOfWeek)
+    
+    type BusinessHourItem = {
+      dayOfWeek: string
+      openTimeMin: number
+      closeTimeMin: number
+      isClosed: boolean
+    }
+    
+    const businessHour = restaurant.businessHours.find((h: BusinessHourItem) => h.dayOfWeek === dayOfWeek)
   
     if (!businessHour || businessHour.isClosed) {
       throw new AppError('RESTAURANT_CLOSED', 'El restaurante esta cerrado ese dia', 400)
