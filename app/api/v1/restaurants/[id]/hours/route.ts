@@ -79,8 +79,9 @@ export async function GET(
     const { id } = await params
     const hours = await getBusinessHoursService(id)
 
-    // Convertir minutos de vuelta a HH:MM para la respuesta
-    const formatted = hours.map((h) => ({
+    type HourItem = Awaited<ReturnType<typeof getBusinessHoursService>>[number]
+
+    const formatted = hours.map((h: HourItem) => ({
       id: h.id,
       dayOfWeek: h.dayOfWeek,
       openTime: minutesToTime(h.openTimeMin),
@@ -133,13 +134,15 @@ export async function PUT(
     const hours = await setBusinessHoursService(id, dtos, claims.sub)
 
     // Convertir minutos de vuelta a HH:MM para la respuesta
-    const formatted = hours.map((h) => ({
-      id: h.id,
-      dayOfWeek: h.dayOfWeek,
-      openTime: minutesToTime(h.openTimeMin),
-      closeTime: minutesToTime(h.closeTimeMin),
-      isClosed: h.isClosed,
-    }))
+    type HourItem = Awaited<ReturnType<typeof setBusinessHoursService>>[number]
+
+    const formatted = hours.map((h: HourItem) => ({
+    id: h.id,
+    dayOfWeek: h.dayOfWeek,
+    openTime: minutesToTime(h.openTimeMin),
+    closeTime: minutesToTime(h.closeTimeMin),
+    isClosed: h.isClosed,
+  }))
 
     return NextResponse.json({ success: true, data: formatted }, { status: 200 })
   } catch (error) {

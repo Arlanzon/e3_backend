@@ -1,7 +1,13 @@
 import { prisma } from '@/lib/prisma'
 import type { CreateRestaurantInput, UpdateRestaurantInput, ListRestaurantsInput } from './restaurants.schema'
-import type { RestaurantStatus } from '@prisma/client'
 import type { BusinessHourDTO } from './restaurants.schema'
+
+type TransactionClient = Omit<
+  typeof prisma,
+  '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
+>
+
+type RestaurantStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'
 
 export async function findRestaurantBySlug(slug: string) {
   return prisma.restaurant.findUnique({
@@ -72,7 +78,7 @@ export async function createRestaurant(
 ) {
   const { userId, ...restaurantData } = data
 
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: TransactionClient) => {
     const restaurant = await tx.restaurant.create({
       data: restaurantData,
     })
@@ -141,5 +147,134 @@ export async function findBusinessHours(restaurantId: string) {
   return prisma.businessHour.findMany({
     where: { restaurantId },
     orderBy: { dayOfWeek: 'asc' },
+  })
+}
+
+// Cierres especiales
+
+export async function createClosure(
+  restaurantId: string,
+  data: {
+    date: Date
+    isClosed: boolean
+    openTimeMin?: number
+    closeTimeMin?: number
+    reason?: string
+  }
+) {
+  return prisma.specialClosure.create({
+    data: { restaurantId, ...data },
+  })
+}
+
+export async function findClosures(restaurantId: string) {
+  return prisma.specialClosure.findMany({
+    where: { restaurantId },
+    orderBy: { date: 'asc' },
+  })
+}
+
+export async function findClosureById(id: string) {
+  return prisma.specialClosure.findUnique({ where: { id } })
+}
+
+export async function deleteClosure(id: string) {
+  return prisma.specialClosure.delete({ where: { id } })
+}
+
+export async function findClosureByRestaurantAndDate(
+  restaurantId: string,
+  date: Date
+) {
+  return prisma.specialClosure.findUnique({
+    where: {
+      restaurantId_date: {
+        restaurantId,
+        date,
+      },
+    },
+  })
+}
+
+// Fotos
+
+export async function createPhoto(
+  restaurantId: string,
+  data: { url: string; isPrimary: boolean; order: number }
+) {
+  return prisma.$transaction(async (tx: TransactionClient) => {
+    if (data.isPrimary) {
+      await tx.restaurantPhoto.updateMany({
+        where: { restaurantId },
+        data: { isPrimary: false },
+      })
+    }
+
+    return tx.restaurantPhoto.create({
+      data: { restaurantId, ...data },
+    })
+  })
+}
+
+export async function findPhotos(restaurantId: string) {
+  return prisma.restaurantPhoto.findMany({
+    where: { restaurantId },
+    orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
+  })
+}
+
+export async function findPhotoById(id: string) {
+  return prisma.restaurantPhoto.findUnique({ where: { id } })
+}
+
+export async function countPhotosByRestaurant(restaurantId: string) {
+  return prisma.restaurantPhoto.count({
+    where: { restaurantId },
+  })
+}
+
+export async function updatePhoto(
+  id: string,
+  restaurantId: string,
+  data: { isPrimary?: boolean; order?: number }
+) {
+  return prisma.$transaction(async (tx: TransactionClient) => {
+    if (data.isPrimary) {
+      await tx.restaurantPhoto.updateMany({
+        where: { restaurantId },
+        data: { isPrimary: false },
+      })
+    }
+
+    return tx.restaurantPhoto.update({
+      where: { id },
+      data,
+    })
+  })
+}
+
+export async function deletePhoto(id: string, restaurantId: string) {
+  return prisma.$transaction(async (tx: TransactionClient) => {
+    const photo = await tx.restaurantPhoto.findUnique({
+      where: { id },
+    })
+
+    await tx.restaurantPhoto.delete({
+      where: { id },
+    })
+
+    if (photo?.isPrimary) {
+      const next = await tx.restaurantPhoto.findFirst({
+        where: { restaurantId },
+        orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
+      })
+
+      if (next) {
+        await tx.restaurantPhoto.update({
+          where: { id: next.id },
+          data: { isPrimary: true },
+        })
+      }
+    }
   })
 }

@@ -65,13 +65,23 @@ export type UpdateRestaurantInput = z.infer<typeof updateRestaurantSchema>
 export type ListRestaurantsInput = z.infer<typeof listRestaurantsSchema>
 
 
-import { DayOfWeek } from '@prisma/client'
 import { timeToMinutes } from '@/utils/time'
 
 const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/
+const dayOfWeekValues = [
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
+  'FRIDAY',
+  'SATURDAY',
+  'SUNDAY',
+] as const
+
+type DayOfWeek = (typeof dayOfWeekValues)[number]
 
 export const businessHourInputSchema = z.object({
-  dayOfWeek: z.nativeEnum(DayOfWeek),
+  dayOfWeek: z.enum(dayOfWeekValues),
   openTime: z.string().regex(timeRegex, 'Hora de apertura invalida HH:MM'),
   closeTime: z.string().regex(timeRegex, 'Hora de cierre invalida HH:MM'),
   isClosed: z.boolean().default(false),

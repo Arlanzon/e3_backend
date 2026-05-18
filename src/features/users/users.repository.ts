@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
-import type { UserRole } from '@prisma/client'
+
+type UserRole = 'CUSTOMER' | 'OWNER' | 'MANAGER' | 'ADMIN'
 
 export async function findUserByEmail(email: string) {
   return prisma.user.findUnique({

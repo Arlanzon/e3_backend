@@ -2,7 +2,8 @@ import { NextRequest } from 'next/server'
 import { extractToken, verifyToken } from '@/lib/jwt'
 import { AppError } from '@/lib/errors'
 import type { JWTPayload } from '@/lib/jwt'
-import type { UserRole } from '@prisma/client'
+
+type UserRole = 'CUSTOMER' | 'OWNER' | 'MANAGER' | 'ADMIN'
 
 export async function getAuthUser(
   req: NextRequest

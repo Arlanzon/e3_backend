@@ -1,5 +1,7 @@
 import swaggerJsdoc from 'swagger-jsdoc'
 
+import path from 'path'
+
 const options: swaggerJsdoc.Options = {
   definition: {
     openapi: '3.0.0',
@@ -17,6 +19,10 @@ const options: swaggerJsdoc.Options = {
       {
         url: 'http://localhost:3000/api/v1',
         description: 'Servidor de desarrollo',
+      },
+      {
+        url: 'https://e3-backend.vercel.app/api/v1',
+        description: 'Servidor de producción',
       },
     ],
     components: {
@@ -93,9 +99,10 @@ const options: swaggerJsdoc.Options = {
       { name: 'Auth', description: 'Autenticacion y sesion' },
       { name: 'Users', description: 'Gestion de usuarios' },
       { name: 'Restaurants', description: 'Gestion de restaurantes' },
+      { name: 'Reservations', description: 'Gestion de reservaciones' },
     ],
   },
-  apis: ['./app/api/v1/**/*.ts'],
+  apis: [path.join(process.cwd(), 'app/api/v1/**/*.ts')],
 }
 
 export const swaggerSpec = swaggerJsdoc(options)
