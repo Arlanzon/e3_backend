@@ -1,11 +1,9 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import PageContainer from '@/components/layout/PageContainer'
-import {
-  getRestaurantBySlug,
-  restaurantDetails,
-} from '@/features/restaurants/data/restaurant-details'
-import { restaurants } from '@/features/restaurants/data/restaurants'
+import { getRestaurantById } from '@/features/restaurants/data/restaurant-details'
+import { mockRestaurants } from '@/features/restaurants/data/restaurants'
+import type { Restaurant } from '@/features/restaurants/types'
 
 type RestaurantDetailPageProps = {
   params: Promise<{
@@ -13,34 +11,66 @@ type RestaurantDetailPageProps = {
   }>
 }
 
+type RestaurantSchedule = {
+  day: string
+  time: string
+}
+
+type RestaurantDetailView = {
+  name: string
+  category: string
+  location: string
+  rating: string
+  distance: string
+  price: string
+  description: string
+  longDescription: string
+  imageUrl: string
+  phone: string
+  address: string
+  hours: RestaurantSchedule[]
+  specialties: string[]
+}
+
+const fallbackPhotoUrl = '/images/restaurants/fallback-restaurant.png'
+
+function getPriceRange(restaurant: Restaurant): string {
+  return restaurant.cuisineType === 'Cafeteria' || restaurant.cuisineType === 'Fonda' ? '$' : '$$'
+}
+
+function toRestaurantDetailView(restaurant: Restaurant): RestaurantDetailView {
+  return {
+    name: restaurant.name,
+    category: restaurant.cuisineType,
+    location: restaurant.address,
+    rating: (restaurant.ratingAvg ?? 0).toFixed(1),
+    distance: '1.2 km',
+    price: getPriceRange(restaurant),
+    description: restaurant.description ?? '',
+    longDescription:
+      restaurant.description ??
+      'Restaurante oaxaqueno con cocina local, atencion cercana y una propuesta pensada para disfrutar el centro de la ciudad.',
+    imageUrl: restaurant.photos?.[0]?.url ?? fallbackPhotoUrl,
+    phone: restaurant.phone ?? 'Sin telefono registrado',
+    address: restaurant.address,
+    hours: [
+      { day: 'Lunes a sabado', time: '08:00 - 22:00' },
+      { day: 'Domingo', time: 'Cerrado' },
+    ],
+    specialties: ['Mole de la casa', 'Tortillas hechas a mano', 'Chocolate de agua'],
+  }
+}
+
 export default async function RestaurantDetailPage({
   params,
 }: RestaurantDetailPageProps) {
   const { id } = await params
-  const restaurantBySlug = getRestaurantBySlug(id)
-  const restaurantById = restaurants.find((item) => item.id === id)
-  const fallbackRestaurant = restaurantDetails[0]
-
-  const restaurant = restaurantBySlug ?? {
-    slug: restaurantById?.id ?? fallbackRestaurant.slug,
-    name: restaurantById?.name ?? fallbackRestaurant.name,
-    category: restaurantById?.category ?? fallbackRestaurant.category,
-    location: restaurantById?.location ?? fallbackRestaurant.location,
-    rating: restaurantById?.rating.toFixed(1) ?? fallbackRestaurant.rating,
-    distance: fallbackRestaurant.distance,
-    price: restaurantById?.priceRange ?? fallbackRestaurant.price,
-    description: restaurantById?.description ?? fallbackRestaurant.description,
-    longDescription:
-      restaurantById?.description ?? fallbackRestaurant.longDescription,
-    imageUrl:
-      restaurantById?.imageUrl ??
-      fallbackRestaurant.imageUrl ??
-      '/images/restaurants/fallback-restaurant.png',
-    phone: fallbackRestaurant.phone,
-    address: restaurantById?.location ?? fallbackRestaurant.address,
-    hours: fallbackRestaurant.hours,
-    specialties: fallbackRestaurant.specialties,
-  }
+  const restaurantById = getRestaurantById(id)
+  const restaurantBySlug = mockRestaurants.find((item) => item.slug === id)
+  const fallbackRestaurant = mockRestaurants[0]
+  const restaurant = toRestaurantDetailView(
+    restaurantById ?? restaurantBySlug ?? fallbackRestaurant
+  )
 
   return (
     <PageContainer className="space-y-8">

@@ -1,16 +1,18 @@
 import PageContainer from '@/components/layout/PageContainer'
 import RestaurantCard from '@/components/restaurant/RestaurantCard'
-import { restaurantDetails } from '@/features/restaurants/data/restaurant-details'
+import { mockRestaurants } from '@/features/restaurants/data/restaurants'
 
-const restaurants = restaurantDetails.map((restaurant, index) => ({
-  id: restaurant.slug,
+const fallbackPhotoUrl = '/images/restaurants/fallback-restaurant.png'
+
+const restaurants = mockRestaurants.map((restaurant, index) => ({
+  id: restaurant.id,
   name: restaurant.name,
-  cuisine: restaurant.category,
-  neighborhood: restaurant.location,
-  description: restaurant.description,
-  rating: Number(restaurant.rating),
-  priceRange: restaurant.price,
-  imageUrl: restaurant.imageUrl,
+  cuisine: restaurant.cuisineType,
+  neighborhood: restaurant.address,
+  description: restaurant.description ?? '',
+  rating: restaurant.ratingAvg ?? 0,
+  priceRange: restaurant.cuisineType === 'Cafeteria' || restaurant.cuisineType === 'Fonda' ? '$' : '$$',
+  imageUrl: restaurant.photos?.[0]?.url ?? fallbackPhotoUrl,
   featured: index === 0,
 }))
 

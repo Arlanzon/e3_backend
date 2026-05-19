@@ -2,17 +2,19 @@ import Image from 'next/image'
 import Link from 'next/link'
 import PageContainer from '@/components/layout/PageContainer'
 import RestaurantCard from '@/components/restaurant/RestaurantCard'
-import { restaurants } from '@/features/restaurants/data/restaurants'
+import { featuredRestaurants as featuredRestaurantMocks } from '@/features/restaurants/data/restaurants'
 
-const featuredRestaurants = restaurants.slice(0, 3).map((restaurant) => ({
+const fallbackPhotoUrl = '/images/restaurants/fallback-restaurant.png'
+
+const featuredRestaurants = featuredRestaurantMocks.map((restaurant) => ({
   id: restaurant.id,
   name: restaurant.name,
-  cuisine: restaurant.category,
-  neighborhood: restaurant.location,
-  description: restaurant.description,
-  rating: restaurant.rating,
-  priceRange: restaurant.priceRange,
-  imageUrl: restaurant.imageUrl,
+  cuisine: restaurant.cuisineType,
+  neighborhood: restaurant.address,
+  description: restaurant.description ?? '',
+  rating: restaurant.ratingAvg ?? 0,
+  priceRange: restaurant.cuisineType === 'Cafeteria' || restaurant.cuisineType === 'Fonda' ? '$' : '$$',
+  imageUrl: restaurant.photos?.[0]?.url ?? fallbackPhotoUrl,
   featured: true,
 }))
 
