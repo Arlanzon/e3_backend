@@ -1,41 +1,11 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import PageContainer from '@/components/layout/PageContainer'
-
-const restaurants = [
-  {
-    id: 'casa-nopal',
-    name: 'Casa Nopal',
-    cuisine: 'Oaxaquena contemporanea',
-    neighborhood: 'Centro historico',
-    description:
-      'Casa Nopal trabaja con productores cercanos para construir una carta de temporada alrededor de maices criollos, moles de la casa, vegetales tatemados y destilados locales. El espacio esta pensado para comidas pausadas, cenas de celebracion y primeras visitas a la ciudad.',
-    rating: 4.8,
-    priceRange: '$$$',
-    hours: 'Lun a Sab · 13:00 a 22:30',
-  },
-  {
-    id: 'patio-lumbre',
-    name: 'Patio Lumbre',
-    cuisine: 'Brasas y cocina regional',
-    neighborhood: 'Jalatlaco',
-    description:
-      'Patio Lumbre combina cocina de brasas, antojitos regionales y una atmosfera de patio abierto. Su menu mock destaca platos para compartir y preparaciones sencillas con mucho caracter.',
-    rating: 4.7,
-    priceRange: '$$',
-    hours: 'Mar a Dom · 14:00 a 23:00',
-  },
-  {
-    id: 'maizal-azul',
-    name: 'Maizal Azul',
-    cuisine: 'Tlayudas y antojitos',
-    neighborhood: 'Reforma',
-    description:
-      'Maizal Azul presenta una experiencia casual con tlayudas, memelas y bebidas frescas. Es una opcion visual para representar restaurantes accesibles dentro del directorio.',
-    rating: 4.6,
-    priceRange: '$$',
-    hours: 'Todos los dias · 12:00 a 21:30',
-  },
-]
+import {
+  getRestaurantBySlug,
+  restaurantDetails,
+} from '@/features/restaurants/data/restaurant-details'
+import { restaurants } from '@/features/restaurants/data/restaurants'
 
 type RestaurantDetailPageProps = {
   params: Promise<{
@@ -47,7 +17,30 @@ export default async function RestaurantDetailPage({
   params,
 }: RestaurantDetailPageProps) {
   const { id } = await params
-  const restaurant = restaurants.find((item) => item.id === id) ?? restaurants[0]
+  const restaurantBySlug = getRestaurantBySlug(id)
+  const restaurantById = restaurants.find((item) => item.id === id)
+  const fallbackRestaurant = restaurantDetails[0]
+
+  const restaurant = restaurantBySlug ?? {
+    slug: restaurantById?.id ?? fallbackRestaurant.slug,
+    name: restaurantById?.name ?? fallbackRestaurant.name,
+    category: restaurantById?.category ?? fallbackRestaurant.category,
+    location: restaurantById?.location ?? fallbackRestaurant.location,
+    rating: restaurantById?.rating.toFixed(1) ?? fallbackRestaurant.rating,
+    distance: fallbackRestaurant.distance,
+    price: restaurantById?.priceRange ?? fallbackRestaurant.price,
+    description: restaurantById?.description ?? fallbackRestaurant.description,
+    longDescription:
+      restaurantById?.description ?? fallbackRestaurant.longDescription,
+    imageUrl:
+      restaurantById?.imageUrl ??
+      fallbackRestaurant.imageUrl ??
+      '/images/restaurants/fallback-restaurant.png',
+    phone: fallbackRestaurant.phone,
+    address: restaurantById?.location ?? fallbackRestaurant.address,
+    hours: fallbackRestaurant.hours,
+    specialties: fallbackRestaurant.specialties,
+  }
 
   return (
     <PageContainer className="space-y-8">
@@ -59,14 +52,23 @@ export default async function RestaurantDetailPage({
       </Link>
 
       <section className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
-        <div className="min-h-96 rounded-lg bg-[linear-gradient(135deg,#14532d,#0f766e_45%,#f59e0b)] p-6 text-white shadow-sm">
-          <div className="flex h-full min-h-80 flex-col justify-end rounded-lg border border-white/30 p-6">
+        <div className="relative min-h-96 overflow-hidden rounded-lg bg-stone-100 p-6 text-white shadow-sm">
+          <Image
+            src={restaurant.imageUrl}
+            alt={restaurant.name}
+            fill
+            priority
+            sizes="(min-width: 1024px) 50vw, 100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-[#1A3A2A]/35" />
+          <div className="relative flex h-full min-h-80 flex-col justify-end rounded-lg border border-white/30 p-6">
             <span className="w-fit rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-emerald-900">
-              Imagen placeholder
+              {restaurant.price}
             </span>
             <h1 className="mt-5 text-4xl font-bold">{restaurant.name}</h1>
             <p className="mt-2 text-white/85">
-              {restaurant.cuisine} · {restaurant.neighborhood}
+              {restaurant.category} - {restaurant.location}
             </p>
           </div>
         </div>
@@ -79,33 +81,70 @@ export default async function RestaurantDetailPage({
             <h2 className="text-3xl font-bold text-stone-950">
               {restaurant.name}
             </h2>
-            <p className="leading-8 text-stone-600">{restaurant.description}</p>
+            <p className="leading-8 text-stone-600">
+              {restaurant.longDescription}
+            </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-lg border border-stone-200 bg-white p-4">
               <p className="text-sm text-stone-500">Rating</p>
               <p className="mt-1 text-xl font-semibold text-stone-950">
-                {restaurant.rating.toFixed(1)}
+                {restaurant.rating}
               </p>
             </div>
             <div className="rounded-lg border border-stone-200 bg-white p-4">
               <p className="text-sm text-stone-500">Precio</p>
               <p className="mt-1 text-xl font-semibold text-stone-950">
-                {restaurant.priceRange}
+                {restaurant.price}
               </p>
             </div>
             <div className="rounded-lg border border-stone-200 bg-white p-4">
               <p className="text-sm text-stone-500">Zona</p>
               <p className="mt-1 text-xl font-semibold text-stone-950">
-                {restaurant.neighborhood}
+                {restaurant.location}
               </p>
             </div>
           </div>
 
-          <div className="rounded-lg border border-stone-200 bg-stone-50 p-5">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-lg border border-stone-200 bg-stone-50 p-5">
+              <p className="text-sm font-semibold text-stone-950">Contacto</p>
+              <p className="mt-2 text-stone-600">{restaurant.phone}</p>
+              <p className="mt-1 text-stone-600">{restaurant.address}</p>
+            </div>
+            <div className="rounded-lg border border-stone-200 bg-stone-50 p-5">
+              <p className="text-sm font-semibold text-stone-950">Distancia</p>
+              <p className="mt-2 text-stone-600">{restaurant.distance}</p>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-stone-200 bg-white p-5">
             <p className="text-sm font-semibold text-stone-950">Horario</p>
-            <p className="mt-2 text-stone-600">{restaurant.hours}</p>
+            <div className="mt-3 space-y-2">
+              {restaurant.hours.map((schedule) => (
+                <div
+                  key={`${schedule.day}-${schedule.time}`}
+                  className="flex justify-between gap-4 text-sm text-stone-600"
+                >
+                  <span>{schedule.day}</span>
+                  <span className="font-medium text-stone-800">
+                    {schedule.time}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {restaurant.specialties.map((specialty) => (
+              <span
+                key={specialty}
+                className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-800"
+              >
+                {specialty}
+              </span>
+            ))}
           </div>
 
           <button

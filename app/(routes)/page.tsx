@@ -1,104 +1,90 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import PageContainer from '@/components/layout/PageContainer'
 import RestaurantCard from '@/components/restaurant/RestaurantCard'
+import { restaurants } from '@/features/restaurants/data/restaurants'
 
-const featuredRestaurants = [
-  {
-    id: 'casa-nopal',
-    name: 'Casa Nopal',
-    cuisine: 'Oaxaquena contemporanea',
-    neighborhood: 'Centro historico',
-    description:
-      'Cocina de temporada con maices criollos, moles de la casa y una seleccion cuidada de mezcales locales.',
-    rating: 4.8,
-    priceRange: '$$$',
-    featured: true,
-  },
-  {
-    id: 'patio-lumbre',
-    name: 'Patio Lumbre',
-    cuisine: 'Brasas y cocina regional',
-    neighborhood: 'Jalatlaco',
-    description:
-      'Un patio relajado para compartir cortes, vegetales al carbon y antojitos preparados con ingredientes de mercado.',
-    rating: 4.7,
-    priceRange: '$$',
-    featured: true,
-  },
-  {
-    id: 'maizal-azul',
-    name: 'Maizal Azul',
-    cuisine: 'Tlayudas y antojitos',
-    neighborhood: 'Reforma',
-    description:
-      'Sabores tradicionales en un formato casual, ideal para comidas entre amigos y cenas sin prisa.',
-    rating: 4.6,
-    priceRange: '$$',
-    featured: true,
-  },
-]
+const featuredRestaurants = restaurants.slice(0, 3).map((restaurant) => ({
+  id: restaurant.id,
+  name: restaurant.name,
+  cuisine: restaurant.category,
+  neighborhood: restaurant.location,
+  description: restaurant.description,
+  rating: restaurant.rating,
+  priceRange: restaurant.priceRange,
+  imageUrl: restaurant.imageUrl,
+  featured: true,
+}))
 
 export default function HomePage() {
   return (
-    <PageContainer className="space-y-16">
-      <section className="grid gap-10 py-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-        <div className="space-y-7">
-          <span className="inline-flex rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800">
-            Restaurantes locales en un solo lugar
-          </span>
-          <div className="space-y-5">
-            <h1 className="max-w-3xl text-4xl font-bold tracking-normal text-stone-950 sm:text-5xl">
-              Descubre, compara y reserva experiencias gastronomicas en Oaxaca.
-            </h1>
-            <p className="max-w-2xl text-lg leading-8 text-stone-600">
-              Una primera vista de la plataforma para explorar restaurantes,
-              revisar su propuesta y preparar reservaciones de manera sencilla.
-            </p>
-          </div>
-          <Link
-            href="/restaurants"
-            className="inline-flex rounded-full bg-emerald-700 px-6 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800"
-          >
-            Ver restaurantes
-          </Link>
-        </div>
+    <main className="bg-[#FAFAF7]">
+      <PageContainer className="space-y-16 pb-16">
+        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1A3A2A] to-[#2D5A3D] px-6 py-12 text-white shadow-sm sm:px-10 lg:px-14 lg:py-16">
+          <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+            <div className="relative z-10 space-y-7">
+              <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white">
+                Cocina local, mesas memorables
+              </span>
+              <div className="space-y-5">
+                <h1 className="max-w-3xl text-4xl font-bold tracking-normal text-white sm:text-5xl lg:text-6xl">
+                  Descubre el sabor de{' '}
+                  <span className="text-[#C4622D]">Oaxaca</span> en cada
+                  reserva.
+                </h1>
+                <p className="max-w-2xl text-lg leading-8 text-white/80">
+                  Explora restaurantes locales, compara propuestas y encuentra
+                  el lugar ideal para desayunar, comer o cerrar la noche con
+                  una buena mesa.
+                </p>
+              </div>
+              <Link
+                href="/restaurants"
+                className="inline-flex rounded-xl bg-[#C4622D] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#A94F24] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                Ver restaurantes
+              </Link>
+            </div>
 
-        <div className="min-h-80 rounded-lg bg-[linear-gradient(135deg,#064e3b,#f59e0b_55%,#fef3c7)] p-6 text-white shadow-sm">
-          <div className="flex h-full min-h-72 flex-col justify-end rounded-lg border border-white/30 p-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">
-              Oaxaca · Reservaciones
-            </p>
-            <p className="mt-3 max-w-sm text-2xl font-semibold">
-              Mocks visuales listos para iterar antes de conectar la API.
-            </p>
+            <div className="relative z-10 min-h-72 lg:min-h-96">
+              <Image
+                src="/images/brand/alebrije-chapulin.png"
+                alt="Alebrije chapulín"
+                fill
+                priority
+                sizes="(min-width: 1024px) 42vw, 100vw"
+                className="object-contain drop-shadow-2xl"
+              />
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="space-y-6">
-        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-          <div>
-            <h2 className="text-2xl font-semibold text-stone-950">
-              Restaurantes destacados
-            </h2>
-            <p className="mt-2 text-stone-600">
-              Una seleccion inicial para mostrar el flujo de exploracion.
-            </p>
+        <section className="space-y-6">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+            <div>
+              <h2 className="text-2xl font-semibold text-[#1C1C1C]">
+                Restaurantes destacados
+              </h2>
+              <p className="mt-2 text-[#6B6B6B]">
+                Una selección inicial para probar sabores oaxaqueños cerca de
+                ti.
+              </p>
+            </div>
+            <Link
+              href="/restaurants"
+              className="text-sm font-semibold text-[#1A3A2A] transition hover:text-[#C4622D]"
+            >
+              Ver todos
+            </Link>
           </div>
-          <Link
-            href="/restaurants"
-            className="text-sm font-semibold text-emerald-700 hover:text-emerald-900"
-          >
-            Ver todos
-          </Link>
-        </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {featuredRestaurants.map((restaurant) => (
-            <RestaurantCard key={restaurant.id} {...restaurant} />
-          ))}
-        </div>
-      </section>
-    </PageContainer>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {featuredRestaurants.map((restaurant) => (
+              <RestaurantCard key={restaurant.id} {...restaurant} />
+            ))}
+          </div>
+        </section>
+      </PageContainer>
+    </main>
   )
 }

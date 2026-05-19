@@ -1,71 +1,20 @@
 import PageContainer from '@/components/layout/PageContainer'
 import RestaurantCard from '@/components/restaurant/RestaurantCard'
+import { restaurantDetails } from '@/features/restaurants/data/restaurant-details'
 
-const restaurants = [
-  {
-    id: 'casa-nopal',
-    name: 'Casa Nopal',
-    cuisine: 'Oaxaquena contemporanea',
-    neighborhood: 'Centro historico',
-    description:
-      'Cocina de temporada con maices criollos, moles de la casa y una seleccion cuidada de mezcales locales.',
-    rating: 4.8,
-    priceRange: '$$$',
-    featured: true,
-  },
-  {
-    id: 'patio-lumbre',
-    name: 'Patio Lumbre',
-    cuisine: 'Brasas y cocina regional',
-    neighborhood: 'Jalatlaco',
-    description:
-      'Un patio relajado para compartir cortes, vegetales al carbon y antojitos preparados con ingredientes de mercado.',
-    rating: 4.7,
-    priceRange: '$$',
-  },
-  {
-    id: 'maizal-azul',
-    name: 'Maizal Azul',
-    cuisine: 'Tlayudas y antojitos',
-    neighborhood: 'Reforma',
-    description:
-      'Sabores tradicionales en un formato casual, ideal para comidas entre amigos y cenas sin prisa.',
-    rating: 4.6,
-    priceRange: '$$',
-  },
-  {
-    id: 'mesa-calenda',
-    name: 'Mesa Calenda',
-    cuisine: 'Menu de degustacion',
-    neighborhood: 'Xochimilco',
-    description:
-      'Un recorrido por ingredientes locales, tecnicas artesanales y platos pensados para celebrar ocasiones especiales.',
-    rating: 4.9,
-    priceRange: '$$$$',
-  },
-  {
-    id: 'bruma-cafe',
-    name: 'Bruma Cafe',
-    cuisine: 'Cafe y brunch',
-    neighborhood: 'Centro historico',
-    description:
-      'Cafe de especialidad, pan dulce de la casa y desayunos amplios para empezar el dia caminando el centro.',
-    rating: 4.5,
-    priceRange: '$$',
-  },
-  {
-    id: 'huerto-santo',
-    name: 'Huerto Santo',
-    cuisine: 'Vegetariana regional',
-    neighborhood: 'San Felipe',
-    description:
-      'Platos frescos con vegetales locales, hierbas aromaticas y una carta ligera para comidas tranquilas.',
-    rating: 4.4,
-    priceRange: '$$',
-  },
-]
+const restaurants = restaurantDetails.map((restaurant, index) => ({
+  id: restaurant.slug,
+  name: restaurant.name,
+  cuisine: restaurant.category,
+  neighborhood: restaurant.location,
+  description: restaurant.description,
+  rating: Number(restaurant.rating),
+  priceRange: restaurant.price,
+  imageUrl: restaurant.imageUrl,
+  featured: index === 0,
+}))
 
-const filters = ['Todos', 'Centro', 'Jalatlaco', 'Brunch', 'Cena', 'Mejor rating']
+const filters = ['Todos', 'Centro', 'Jalatlaco', 'Cafe', 'Regional', 'Mejor rating']
 
 export default function RestaurantsPage() {
   return (
