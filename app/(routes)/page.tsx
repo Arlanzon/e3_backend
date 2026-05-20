@@ -2,21 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import PageContainer from '@/components/layout/PageContainer'
 import RestaurantCard from '@/components/restaurant/RestaurantCard'
-import { featuredRestaurants as featuredRestaurantMocks } from '@/features/restaurants/data/restaurants'
-
-const fallbackPhotoUrl = '/images/restaurants/fallback-restaurant.png'
-
-const featuredRestaurants = featuredRestaurantMocks.map((restaurant) => ({
-  id: restaurant.id,
-  name: restaurant.name,
-  cuisine: restaurant.cuisineType,
-  neighborhood: restaurant.address,
-  description: restaurant.description ?? '',
-  rating: restaurant.ratingAvg ?? 0,
-  priceRange: restaurant.cuisineType === 'Cafeteria' || restaurant.cuisineType === 'Fonda' ? '$' : '$$',
-  imageUrl: restaurant.photos?.[0]?.url ?? fallbackPhotoUrl,
-  featured: true,
-}))
+import { featuredRestaurants } from '@/features/restaurants/data/restaurants'
 
 export default function HomePage() {
   return (
@@ -82,7 +68,20 @@ export default function HomePage() {
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {featuredRestaurants.map((restaurant) => (
-              <RestaurantCard key={restaurant.id} {...restaurant} />
+              <RestaurantCard
+                key={restaurant.id}
+                id={restaurant.id}
+                name={restaurant.name}
+                cuisineType={restaurant.cuisineType}
+                address={restaurant.address}
+                ratingAvg={restaurant.ratingAvg}
+                ratingCount={restaurant.ratingCount}
+                photoUrl={
+                  restaurant.photos?.find((photo) => photo.isPrimary)?.url ??
+                  restaurant.photos?.[0]?.url
+                }
+                featured={true}
+              />
             ))}
           </div>
         </section>

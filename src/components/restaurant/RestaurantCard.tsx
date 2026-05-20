@@ -1,80 +1,77 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-export type RestaurantCardProps = {
+interface RestaurantCardProps {
   id: string
   name: string
-  cuisine: string
-  neighborhood: string
-  description: string
-  rating: number
-  priceRange: string
-  imageUrl?: string
+  cuisineType: string
+  address: string
+  ratingAvg: number | null
+  ratingCount: number
+  photoUrl?: string
   featured?: boolean
 }
+
+const fallbackPhotoUrl = '/images/restaurants/fallback-restaurant.png'
 
 export default function RestaurantCard({
   id,
   name,
-  cuisine,
-  neighborhood,
-  description,
-  rating,
-  priceRange,
-  imageUrl = '/images/restaurants/fallback-restaurant.png',
+  cuisineType,
+  address,
+  ratingAvg,
+  ratingCount,
+  photoUrl,
   featured = false,
 }: RestaurantCardProps) {
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#E8E4DE] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-      <div className="relative h-44 overflow-hidden bg-zinc-100">
+    <article className="flex flex-col overflow-hidden rounded-2xl border border-[#E8E4DE] bg-white shadow-sm transition-shadow hover:shadow-md">
+      <div className="relative h-48 overflow-hidden bg-[#FAFAF7]">
         <Image
-          src={imageUrl}
+          src={photoUrl ?? fallbackPhotoUrl}
           alt={name}
           fill
-          sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-          className="object-cover transition duration-300 group-hover:scale-105"
+          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+          className="object-cover"
         />
-        <div className="absolute inset-0 bg-[#1A3A2A]/20" />
         {featured ? (
-          <span className="absolute left-4 top-4 rounded-full bg-white px-3 py-1 text-xs font-semibold text-[#1A3A2A]">
+          <span className="absolute left-3 top-3 rounded-full bg-[#C4622D] px-2 py-1 text-xs text-white">
             Destacado
           </span>
         ) : null}
-        <div className="absolute bottom-4 left-4 right-4">
-          <span className="w-fit rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#1A3A2A]">
-            {priceRange}
-          </span>
-        </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
-            <h3 className="text-base font-semibold leading-6 text-[#1A3A2A]">
-              {name}
-            </h3>
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#C4622D]">
-              {cuisine}
-            </p>
-          </div>
-          <span className="shrink-0 rounded-full bg-[#FAFAF7] px-3 py-1 text-sm font-medium text-[#C4622D]">
-            ★ {rating.toFixed(1)}
-          </span>
-        </div>
-
-        <p className="mt-4 line-clamp-3 flex-1 text-sm leading-6 text-[#6B6B6B]">
-          {description}
+      <div className="flex flex-1 flex-col p-4">
+        <p className="text-xs uppercase tracking-wide text-[#C4622D]">
+          {cuisineType}
+        </p>
+        <h3 className="mt-1 line-clamp-1 text-base font-semibold text-[#1A3A2A]">
+          {name}
+        </h3>
+        <p className="mt-2 line-clamp-1 text-sm text-[#6B6B6B]">
+          <span aria-hidden="true">📍</span> {address}
         </p>
 
-        <div className="mt-5 flex items-center justify-between gap-4 text-sm text-[#6B6B6B]">
-          <span className="min-w-0 truncate">{neighborhood}</span>
-          <Link
-            href={`/restaurants/${id}`}
-            className="shrink-0 rounded-xl bg-[#1A3A2A] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2D5A3D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1A3A2A]"
-          >
-            Ver detalle
-          </Link>
+        <div className="mt-3">
+          {ratingAvg !== null ? (
+            <p className="text-sm text-[#6B6B6B]">
+              <span className="font-semibold text-[#C4622D]">★</span>{' '}
+              <span className="font-medium text-[#1C1C1C]">
+                {ratingAvg.toFixed(1)}
+              </span>{' '}
+              ({ratingCount} reseñas)
+            </p>
+          ) : (
+            <p className="text-xs text-[#6B6B6B]">Sin reseñas aún</p>
+          )}
         </div>
+
+        <Link
+          href={`/restaurants/${id}`}
+          className="mt-4 block w-full rounded-xl bg-[#1A3A2A] py-2 text-center text-sm font-medium text-white transition-colors hover:bg-[#2D5A3D]"
+        >
+          Ver detalle
+        </Link>
       </div>
     </article>
   )
