@@ -66,6 +66,7 @@
 
 .restaurant-detail-stats {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-top: 28px;
 }
@@ -75,6 +76,21 @@
   border: 1px solid #e4e4e7;
   border-radius: 999px;
   padding: 10px 14px;
+}
+
+.restaurant-detail-reserve,
+.reservation-panel a {
+  align-items: center;
+  background: #111111;
+  border-radius: 8px;
+  color: #ffffff;
+  display: inline-flex;
+  font-size: 15px;
+  font-weight: 900;
+  justify-content: center;
+  margin-top: 28px;
+  padding: 14px 18px;
+  text-decoration: none;
 }
 
 .restaurant-detail-image {
@@ -137,7 +153,8 @@
   text-align: right;
 }
 
-.hours-list {
+.hours-list,
+.reviews-list {
   display: grid;
   gap: 14px;
   margin-top: 22px;
@@ -158,6 +175,35 @@
   padding: 9px 12px;
 }
 
+.review-item {
+  background: #fafafa;
+  border: 1px solid #e4e4e7;
+  padding: 16px;
+}
+
+.review-item div {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.review-item span {
+  background: #111111;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 6px 9px;
+}
+
+.review-item p,
+.reservation-panel p {
+  color: #52525b;
+  font-size: 14px;
+  line-height: 22px;
+  margin: 12px 0 0;
+}
+
 .reservation-panel {
   position: sticky;
   top: 20px;
@@ -172,47 +218,8 @@
   text-transform: uppercase;
 }
 
-.reservation-panel form {
-  display: grid;
-  gap: 14px;
-  margin-top: 22px;
-}
-
-.reservation-panel label {
-  color: #3f3f46;
-  display: grid;
-  font-size: 14px;
-  font-weight: 800;
-  gap: 8px;
-}
-
-.reservation-panel input,
-.reservation-panel select {
-  background: #fafafa;
-  border: 1px solid #d4d4d8;
-  border-radius: 8px;
-  color: #111111;
-  font-size: 15px;
-  outline: none;
-  padding: 12px 13px;
-}
-
-.reservation-panel input:focus,
-.reservation-panel select:focus {
-  background: #ffffff;
-  border-color: #111111;
-}
-
-.reservation-panel button {
-  background: #111111;
-  border: 0;
-  border-radius: 8px;
-  color: #ffffff;
-  cursor: pointer;
-  font-size: 15px;
-  font-weight: 900;
-  margin-top: 8px;
-  padding: 14px;
+.reservation-panel a {
+  width: 100%;
 }
 
 @media (max-width: 980px) {

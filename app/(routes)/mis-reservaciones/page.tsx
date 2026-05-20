@@ -1,4 +1,4 @@
-import "../global_css/mis-reservaciones.css";
+import "../../global_css/mis-reservaciones.css";
 
 export default function MisReservacionesPage() {
   const reservaciones = [

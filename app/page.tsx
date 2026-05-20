@@ -1,7 +1,7 @@
 'use client'
 
 import './global_css/main.css'
-import { restaurantDetails } from '../frontend/data/restaurant-details'
+import { restaurantDetails } from '@/data/restaurant-details'
 import { useEffect, useState } from 'react'
 
 const categories = [
@@ -49,7 +49,7 @@ export default function Home() {
         </div>
 
         <nav className="main-nav">
-          <a href="/restaurantes">
+          <a href="/restaurants">
             Restaurantes
           </a>
 
@@ -143,7 +143,7 @@ export default function Home() {
             </h2>
           </div>
 
-          <a href="/restaurantes">
+          <a href="/restaurants">
             Ver todos
           </a>
         </div>
@@ -153,7 +153,7 @@ export default function Home() {
             (restaurant) => (
               <a
                 className="restaurant-card"
-                href={`/restaurantes/${restaurant.slug}`}
+                href={`/restaurants/${restaurant.id}`}
                 key={
                   restaurant.name
                 }

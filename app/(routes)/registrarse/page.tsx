@@ -1,6 +1,6 @@
 'use client'
 
-import '../global_css/registrase.css'
+import '../../global_css/registrase.css'
 import { useRouter } from 'next/navigation'
 
 export default function RegisterPage() {

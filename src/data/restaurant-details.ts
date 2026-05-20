@@ -1,11 +1,14 @@
 export type RestaurantDetail = {
   slug: string
+  id: string
   name: string
   category: string
   location: string
   rating: string
   distance: string
   price: string
+  imageUrl?: string
+  featured?: boolean
   description: string
   longDescription: string
   phone: string
@@ -15,17 +18,26 @@ export type RestaurantDetail = {
     time: string
   }>
   specialties: string[]
+  services: string[]
+  reviews: Array<{
+    author: string
+    rating: string
+    comment: string
+  }>
 }
 
 export const restaurantDetails: RestaurantDetail[] = [
   {
     slug: 'pitiona-cocina-de-autor',
+    id: 'pitiona-cocina-de-autor',
     name: 'Pitiona Cocina de Autor',
     category: 'Cocina oaxaquena',
     location: 'Centro historico',
     rating: '4.8',
     distance: '1.2 km',
     price: '$$$',
+    imageUrl: '/images/mejores-restaurantes-oaxaca-pitiona.jpg',
+    featured: true,
     description: 'Terraza con vista al centro, menu local y cocina de autor.',
     longDescription:
       'Restaurante de cocina oaxaquena contemporanea con terraza, vista al centro y una propuesta ideal para comidas especiales, cenas tranquilas o visitas con invitados.',
@@ -37,15 +49,30 @@ export const restaurantDetails: RestaurantDetail[] = [
       { day: 'Domingo', time: '13:00 - 20:00' },
     ],
     specialties: ['Mole negro', 'Tostadas de temporada', 'Mezcaleria', 'Terraza'],
+    services: ['Reservacion', 'Terraza', 'Barra de mezcal', 'Menu de temporada'],
+    reviews: [
+      {
+        author: 'Mariana C.',
+        rating: '4.9',
+        comment: 'La terraza y el mole fueron lo mejor de la noche.',
+      },
+      {
+        author: 'Luis R.',
+        rating: '4.7',
+        comment: 'Buen servicio, ideal para una cena tranquila en el centro.',
+      },
+    ],
   },
   {
     slug: 'tlayudas-del-centro',
+    id: 'tlayudas-del-centro',
     name: 'Tlayudas del Centro',
     category: 'Antojitos locales',
     location: 'Mercado 20 de Noviembre',
     rating: '4.7',
     distance: '850 m',
     price: '$$',
+    imageUrl: '/images/mejores-restaurantes-oaxaca-pitiona.jpg',
     description: 'Tlayudas, moles y comida tradicional para visitar en grupo.',
     longDescription:
       'Lugar casual para probar antojitos oaxaquenos, tlayudas al carbon y platillos tradicionales en un ambiente movido y cercano al centro.',
@@ -56,15 +83,30 @@ export const restaurantDetails: RestaurantDetail[] = [
       { day: 'Domingo', time: '09:00 - 18:00' },
     ],
     specialties: ['Tlayuda sencilla', 'Tlayuda con tasajo', 'Mole rojo', 'Chocolate'],
+    services: ['Para llevar', 'Mesas familiares', 'Pago en efectivo', 'Abierto temprano'],
+    reviews: [
+      {
+        author: 'Andrea M.',
+        rating: '4.8',
+        comment: 'Sabor muy local y porciones grandes para compartir.',
+      },
+      {
+        author: 'Diego P.',
+        rating: '4.6',
+        comment: 'Perfecto para comer rapido cerca del mercado.',
+      },
+    ],
   },
   {
     slug: 'cafe-santo-domingo',
+    id: 'cafe-santo-domingo',
     name: 'Cafe Santo Domingo',
     category: 'Cafe y pan artesanal',
     location: 'Santo Domingo',
     rating: '4.6',
     distance: '1.8 km',
     price: '$',
+    imageUrl: '/images/mejores-restaurantes-oaxaca-pitiona.jpg',
     description: 'Cafe de especialidad, postres y mesas tranquilas para platicar.',
     longDescription:
       'Cafe tranquilo para desayunar, trabajar un rato o cerrar la tarde cerca de Santo Domingo con pan artesanal y bebidas de especialidad.',
@@ -75,15 +117,31 @@ export const restaurantDetails: RestaurantDetail[] = [
       { day: 'Sabado y domingo', time: '08:00 - 22:00' },
     ],
     specialties: ['Cafe de olla', 'Pan artesanal', 'Postres', 'Desayunos'],
+    services: ['Cafe de especialidad', 'Postres', 'Wifi', 'Pet friendly'],
+    reviews: [
+      {
+        author: 'Sofia G.',
+        rating: '4.7',
+        comment: 'Buen cafe y ambiente calmado para una tarde larga.',
+      },
+      {
+        author: 'Pablo N.',
+        rating: '4.5',
+        comment: 'El pan artesanal vale mucho la vuelta.',
+      },
+    ],
   },
   {
     slug: 'la-mesa-del-valle',
+    id: 'la-mesa-del-valle',
     name: 'La Mesa del Valle',
     category: 'Comida regional',
     location: 'Jalatlaco',
     rating: '4.5',
     distance: '2.1 km',
     price: '$$',
+    featured: true,
+    imageUrl: '/images/mejores-restaurantes-oaxaca-pitiona.jpg',
     description: 'Platillos regionales, desayunos y ambiente casual.',
     longDescription:
       'Restaurante regional de ambiente relajado, pensado para desayunos largos, comida familiar y platillos caseros de Oaxaca.',
@@ -94,6 +152,19 @@ export const restaurantDetails: RestaurantDetail[] = [
       { day: 'Lunes', time: 'Cerrado' },
     ],
     specialties: ['Enmoladas', 'Memelas', 'Caldo de piedra', 'Aguas frescas'],
+    services: ['Desayunos', 'Comida familiar', 'Menu regional', 'Reservacion sugerida'],
+    reviews: [
+      {
+        author: 'Valeria T.',
+        rating: '4.6',
+        comment: 'Muy buena opcion para desayunar sin prisas.',
+      },
+      {
+        author: 'Mateo S.',
+        rating: '4.4',
+        comment: 'Casero, amable y con buenos precios.',
+      },
+    ],
   },
 ]
 

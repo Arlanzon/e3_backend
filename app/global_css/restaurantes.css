@@ -7,6 +7,7 @@
 
 .restaurants-header,
 .restaurants-toolbar,
+.restaurants-filter-strip,
 .restaurants-layout {
   margin: 0 auto;
   max-width: 1460px;
@@ -58,7 +59,7 @@
 .restaurants-toolbar span,
 .restaurants-results-heading span,
 .restaurants-summary span,
-.map-label span {
+.restaurants-sidebar-note span {
   color: #71717a;
   font-size: 13px;
   font-weight: 800;
@@ -69,15 +70,25 @@
   font-size: 44px;
   line-height: 50px;
   margin: 6px 0 0;
+  max-width: 720px;
+}
+
+.restaurants-toolbar p {
+  color: #52525b;
+  font-size: 16px;
+  line-height: 25px;
+  margin: 12px 0 0;
+  max-width: 640px;
 }
 
 .restaurants-search {
   background: #ffffff;
   border: 1px solid #d4d4d8;
   border-radius: 8px;
-  display: flex;
-  min-height: 52px;
-  padding: 0 16px;
+  display: grid;
+  gap: 4px;
+  min-height: 62px;
+  padding: 10px 16px;
   width: min(440px, 100%);
 }
 
@@ -85,22 +96,43 @@
   background: transparent;
   border: 0;
   color: #111111;
-  flex: 1;
   font-size: 15px;
   outline: none;
+}
+
+.restaurants-filter-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.restaurants-filter-strip button {
+  background: #ffffff;
+  border: 1px solid #e4e4e7;
+  border-radius: 999px;
+  color: #27272a;
+  cursor: pointer;
+  font-weight: 800;
+  padding: 11px 15px;
+}
+
+.restaurants-filter-strip button:first-child {
+  background: #111111;
+  border-color: #111111;
+  color: #ffffff;
 }
 
 .restaurants-layout {
   align-items: start;
   display: grid;
   gap: 22px;
-  grid-template-columns: 240px minmax(0, 1fr) 360px;
+  grid-template-columns: 260px minmax(0, 1fr);
   margin-top: 26px;
 }
 
 .restaurants-sidebar,
-.restaurants-results,
-.restaurants-map {
+.restaurants-results {
   border: 1px solid #e4e4e7;
 }
 
@@ -116,37 +148,21 @@
   margin: 0 0 16px;
 }
 
-.restaurants-filter-group {
-  display: grid;
-  gap: 10px;
-}
-
-.restaurants-filter-group button {
-  background: #fafafa;
-  border: 1px solid #e4e4e7;
-  border-radius: 8px;
-  color: #27272a;
-  cursor: pointer;
-  font-weight: 800;
-  padding: 12px;
-  text-align: left;
-}
-
-.restaurants-filter-group button:first-child {
-  background: #111111;
-  border-color: #111111;
-  color: #ffffff;
-}
-
-.restaurants-summary {
+.restaurants-summary,
+.restaurants-sidebar-note {
   background: #f7f7f5;
-  margin-top: 22px;
   padding: 16px;
 }
 
-.restaurants-summary strong {
+.restaurants-sidebar-note {
+  margin-top: 14px;
+}
+
+.restaurants-summary strong,
+.restaurants-sidebar-note strong {
   display: block;
-  font-size: 19px;
+  font-size: 18px;
+  line-height: 24px;
   margin-top: 6px;
 }
 
@@ -182,84 +198,106 @@
   margin: 0;
 }
 
-.restaurants-list {
+.restaurants-grid {
   display: grid;
-  gap: 14px;
+  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
-.restaurant-row {
+.restaurant-card {
   border: 1px solid #e4e4e7;
-  color: inherit;
-  display: grid;
-  grid-template-columns: 180px minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   overflow: hidden;
-  text-decoration: none;
   transition:
     border-color 150ms ease,
     box-shadow 150ms ease,
     transform 150ms ease;
 }
 
-.restaurant-row:hover {
+.restaurant-card:hover {
   border-color: #c7c7cc;
   box-shadow: 0 14px 30px rgb(0 0 0 / 0.09);
   transform: translateY(-1px);
 }
 
-.restaurant-row-image {
-  background: url('/images/mejores-restaurantes-oaxaca-pitiona.jpg');
-  background-position: center;
-  background-size: cover;
-  min-height: 178px;
+.restaurant-card-image-wrap {
+  aspect-ratio: 4 / 3;
+  background: #e4e4e7;
+  overflow: hidden;
+  position: relative;
 }
 
-.restaurant-row-content {
+.restaurant-card-image {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.restaurant-card-badge {
+  background: #111111;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+  left: 14px;
+  padding: 7px 10px;
+  position: absolute;
+  top: 14px;
+}
+
+.restaurant-card-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   padding: 18px;
 }
 
-.restaurant-row-top {
-  align-items: start;
+.restaurant-card-heading {
+  align-items: flex-start;
   display: flex;
   gap: 14px;
   justify-content: space-between;
 }
 
-.restaurant-row-top h3 {
-  font-size: 20px;
-  line-height: 25px;
+.restaurant-card-heading p {
+  color: #71717a;
+  font-size: 13px;
+  font-weight: 800;
+  margin: 0 0 6px;
+  text-transform: uppercase;
+}
+
+.restaurant-card-heading h3 {
+  font-size: 21px;
+  line-height: 26px;
   margin: 0;
 }
 
-.restaurant-row-top p {
-  color: #71717a;
-  font-size: 14px;
-  margin: 6px 0 0;
-}
-
-.restaurant-row-top span {
+.restaurant-card-heading strong {
   background: #f4f4f5;
   border-radius: 999px;
   flex: 0 0 auto;
   font-size: 13px;
-  font-weight: 900;
   padding: 7px 10px;
 }
 
-.restaurant-row-description {
+.restaurant-card-description {
   color: #52525b;
   font-size: 14px;
   line-height: 22px;
   margin: 14px 0 0;
 }
 
-.restaurant-row-meta {
+.restaurant-card-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 16px;
 }
 
-.restaurant-row-meta span {
+.restaurant-card-meta span {
   background: #fafafa;
   border: 1px solid #e4e4e7;
   border-radius: 999px;
@@ -269,84 +307,27 @@
   padding: 7px 10px;
 }
 
-.restaurants-map {
-  background:
-    linear-gradient(135deg, rgb(255 255 255 / 0.82), rgb(255 255 255 / 0.18)),
-    url('/images/mejores-restaurantes-oaxaca-pitiona.jpg');
-  background-position: center;
-  background-size: cover;
-  min-height: 620px;
-  overflow: hidden;
-  position: sticky;
-  top: 20px;
-}
-
-.restaurants-map::after {
-  background:
-    linear-gradient(#111111 1px, transparent 1px),
-    linear-gradient(90deg, #111111 1px, transparent 1px);
-  background-size: 48px 48px;
-  content: '';
-  inset: 0;
-  opacity: 0.07;
-  position: absolute;
-}
-
-.map-pin {
+.restaurant-card-action {
   align-items: center;
   background: #111111;
-  border: 3px solid #ffffff;
-  border-radius: 999px;
-  box-shadow: 0 14px 30px rgb(0 0 0 / 0.22);
+  border-radius: 8px;
   color: #ffffff;
-  display: flex;
-  font-size: 13px;
+  display: inline-flex;
+  font-size: 14px;
   font-weight: 900;
-  height: 38px;
   justify-content: center;
-  position: absolute;
-  width: 38px;
-  z-index: 1;
+  margin-top: auto;
+  padding: 12px 14px;
+  text-decoration: none;
 }
 
-.pin-one {
-  left: 45%;
-  top: 28%;
-}
-
-.pin-two {
-  left: 24%;
-  top: 54%;
-}
-
-.pin-three {
-  right: 20%;
-  top: 62%;
-}
-
-.map-label {
-  background: #ffffff;
-  bottom: 20px;
-  left: 20px;
-  padding: 16px;
-  position: absolute;
-  right: 20px;
-  z-index: 1;
-}
-
-.map-label strong {
-  display: block;
-  font-size: 20px;
-  margin-top: 6px;
-}
-
-@media (max-width: 1180px) {
+@media (max-width: 900px) {
   .restaurants-layout {
-    grid-template-columns: 220px minmax(0, 1fr);
+    grid-template-columns: 1fr;
   }
 
-  .restaurants-map {
-    display: none;
+  .restaurants-sidebar {
+    position: static;
   }
 }
 
@@ -363,7 +344,8 @@
     gap: 14px;
   }
 
-  .restaurants-nav {
+  .restaurants-nav,
+  .restaurants-filter-strip {
     flex-wrap: wrap;
   }
 
@@ -371,31 +353,14 @@
     font-size: 36px;
     line-height: 42px;
   }
-
-  .restaurants-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .restaurants-sidebar {
-    position: static;
-  }
-
-  .restaurants-filter-group {
-    display: flex;
-    overflow-x: auto;
-  }
-
-  .restaurants-filter-group button {
-    flex: 0 0 auto;
-  }
 }
 
 @media (max-width: 560px) {
-  .restaurant-row {
-    grid-template-columns: 1fr;
+  .restaurants-results {
+    padding: 16px;
   }
 
-  .restaurant-row-image {
-    min-height: 190px;
+  .restaurants-grid {
+    grid-template-columns: 1fr;
   }
 }
