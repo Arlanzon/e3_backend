@@ -1,6 +1,3 @@
-'use client'
-
-import Button from '@/components/ui/Button'
 import type { ManagedRestaurant } from '@/features/reservations/data/manager-reservations'
 
 type ManagerRestaurantCardProps = {
@@ -36,15 +33,6 @@ export default function ManagerRestaurantCard({
           <dd className="font-medium text-[#1C1C1C]">{restaurant.capacity}</dd>
         </div>
       </dl>
-
-      <Button
-        type="button"
-        variant="outline"
-        className="mt-4 w-full"
-        onClick={() => console.log(`Editar restaurante: ${restaurant.name}`)}
-      >
-        Editar
-      </Button>
     </article>
   )
 }

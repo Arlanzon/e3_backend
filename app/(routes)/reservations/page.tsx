@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import PageContainer from '@/components/layout/PageContainer'
 import ReservationCard from '@/components/reservation/ReservationCard'
 import ReservationsHeader from '@/components/reservation/ReservationsHeader'
@@ -51,10 +52,7 @@ export default function ReservationsPage() {
   useEffect(() => {
     if (!hasHydrated) return
 
-    if (!token || !isAuthenticated) {
-      router.push('/login')
-      return
-    }
+    if (!token || !isAuthenticated) return
 
     const authToken = token
     let active = true
@@ -127,13 +125,14 @@ export default function ReservationsPage() {
   }
 
   return (
-    <PageContainer className="space-y-8 bg-[#FAFAF7]">
-      <ReservationsHeader total={reservations.length} />
+    <ProtectedRoute>
+      <PageContainer className="space-y-8 bg-[#FAFAF7]">
+        <ReservationsHeader total={reservations.length} />
 
       <div className="flex justify-start">
         <Link
           href="/restaurants"
-          className="rounded-lg bg-[#C4622D] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#A8521F]"
+          className="w-full rounded-lg bg-[#C4622D] px-5 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-[#A8521F] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C4622D] sm:w-auto"
         >
           Buscar restaurante para reservar
         </Link>
@@ -165,7 +164,7 @@ export default function ReservationsPage() {
             action={
               <Link
                 href="/restaurants"
-                className="rounded-lg bg-[#C4622D] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#A8521F]"
+                className="inline-flex rounded-lg bg-[#C4622D] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#A8521F] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C4622D]"
               >
                 Ver restaurantes
               </Link>
@@ -177,7 +176,7 @@ export default function ReservationsPage() {
       {hasHydrated && !loading && !error && reservationCards.length > 0 ? (
         <>
           {cancelError && (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 mb-4">
+            <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {cancelError}
             </p>
           )}
@@ -203,6 +202,7 @@ export default function ReservationsPage() {
           </section>
         </>
       ) : null}
-    </PageContainer>
+      </PageContainer>
+    </ProtectedRoute>
   )
 }

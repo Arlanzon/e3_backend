@@ -26,8 +26,8 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-20 border-b border-[#2D5A3D] bg-[#1A3A2A]">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-3">
+      <nav className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+        <Link href="/" className="flex min-w-0 items-center gap-3">
           <Image
             src="/images/brand/logo-chapulin.png"
             alt="Chapulin"
@@ -35,17 +35,17 @@ export default function Navbar() {
             height={32}
             className="h-8 w-8 rounded-full object-cover"
           />
-          <span className="text-base font-semibold text-white">
+          <span className="truncate text-sm font-semibold text-white sm:text-base">
             Plataforma Gastronomica
           </span>
         </Link>
 
-        <div className="hidden items-center gap-1 sm:flex">
+        <div className="-mx-1 flex items-center gap-1 overflow-x-auto pb-1 sm:mx-0 sm:flex-wrap sm:justify-end sm:overflow-visible sm:pb-0">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-full px-4 py-2 text-sm font-medium text-white transition hover:text-[#C4622D]"
+              className="shrink-0 rounded-full px-3 py-2 text-sm font-medium text-white transition hover:text-[#C4622D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:px-4"
             >
               {item.label}
             </Link>
@@ -55,17 +55,17 @@ export default function Navbar() {
             <>
               <Link
                 href="/reservations"
-                className="rounded-full px-4 py-2 text-sm font-medium text-white transition hover:text-[#C4622D]"
+                className="shrink-0 rounded-full px-3 py-2 text-sm font-medium text-white transition hover:text-[#C4622D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:px-4"
               >
                 Mis Reservaciones
               </Link>
-              <span className="px-3 py-2 text-sm font-medium text-white">
+              <span className="max-w-[10rem] shrink-0 truncate px-3 py-2 text-sm font-medium text-white">
                 {user?.name}
               </span>
               <button
                 type="button"
                 onClick={handleLogout}
-                className="rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700"
+                className="shrink-0 rounded-full bg-red-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:px-4"
               >
                 Cerrar sesión
               </button>
@@ -74,13 +74,13 @@ export default function Navbar() {
             <>
               <Link
                 href="/login"
-                className="rounded-full px-4 py-2 text-sm font-medium text-white transition hover:text-[#C4622D]"
+                className="shrink-0 rounded-full px-3 py-2 text-sm font-medium text-white transition hover:text-[#C4622D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:px-4"
               >
                 Iniciar sesión
               </Link>
               <Link
                 href="/registro"
-                className="rounded-full px-4 py-2 text-sm font-medium text-white transition hover:text-[#C4622D]"
+                className="shrink-0 rounded-full px-3 py-2 text-sm font-medium text-white transition hover:text-[#C4622D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:px-4"
               >
                 Registrarse
               </Link>

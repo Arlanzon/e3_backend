@@ -206,7 +206,7 @@ export default function RestaurantDetailPage() {
 
   return (
     <main className="min-h-screen bg-[#FAFAF7] text-[#1C1C1C]">
-      <section className="relative h-[400px] overflow-hidden">
+      <section className="relative h-[340px] overflow-hidden sm:h-[400px]">
         <Image
           src={mainPhotoUrl}
           alt={restaurant.name}
@@ -222,7 +222,7 @@ export default function RestaurantDetailPage() {
             <span className="inline-flex rounded-full bg-[#C4622D] px-3 py-1 text-xs font-semibold text-white">
               {restaurant.cuisineType}
             </span>
-            <h1 className="mt-4 text-4xl font-bold text-white">
+            <h1 className="mt-4 break-words text-3xl font-bold text-white sm:text-4xl">
               {restaurant.name}
             </h1>
 
@@ -244,7 +244,7 @@ export default function RestaurantDetailPage() {
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Link
           href="/restaurants"
-          className="text-sm font-medium text-[#1A3A2A] hover:underline"
+          className="text-sm font-medium text-[#1A3A2A] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1A3A2A]"
         >
           ← Volver al listado
         </Link>
@@ -265,13 +265,13 @@ export default function RestaurantDetailPage() {
                 Información
               </h2>
               <div className="mt-4 grid gap-4 sm:grid-cols-3">
-                <p className="rounded-xl bg-[#FAFAF7] p-4 text-sm text-[#1C1C1C]">
+                <p className="min-w-0 break-words rounded-xl bg-[#FAFAF7] p-4 text-sm text-[#1C1C1C]">
                   👥 {restaurant.capacity} personas
                 </p>
-                <p className="rounded-xl bg-[#FAFAF7] p-4 text-sm text-[#1C1C1C]">
+                <p className="min-w-0 break-words rounded-xl bg-[#FAFAF7] p-4 text-sm text-[#1C1C1C]">
                   ☎ {restaurant.phone ?? 'No disponible'}
                 </p>
-                <p className="rounded-xl bg-[#FAFAF7] p-4 text-sm text-[#1C1C1C]">
+                <p className="min-w-0 break-words rounded-xl bg-[#FAFAF7] p-4 text-sm text-[#1C1C1C]">
                   ⏱ {restaurant.reservationDurationMin} minutos
                 </p>
               </div>
@@ -286,7 +286,7 @@ export default function RestaurantDetailPage() {
                   {restaurant.businessHours.map((businessHour) => (
                     <div
                       key={businessHour.id}
-                      className="flex items-center justify-between gap-4 py-3 text-sm"
+                      className="flex flex-col gap-1 py-3 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4"
                     >
                       <span className="font-medium text-[#1C1C1C]">
                         {DAY_LABELS[businessHour.dayOfWeek]}
@@ -322,7 +322,7 @@ export default function RestaurantDetailPage() {
             </section>
           </div>
 
-          <aside className="rounded-2xl border border-[#E8E4DE] bg-white p-6 shadow-sm lg:sticky lg:top-6 lg:col-span-1">
+          <aside className="rounded-2xl border border-[#E8E4DE] bg-white p-5 shadow-sm sm:p-6 lg:sticky lg:top-28 lg:col-span-1">
             <h2 className="text-xl font-semibold text-[#1A3A2A]">
               Hacer una reservación
             </h2>
@@ -343,7 +343,7 @@ export default function RestaurantDetailPage() {
 
             <Link
               href={`/reservations/new?restaurantId=${restaurant.id}`}
-              className="mt-6 block w-full rounded-xl bg-[#C4622D] py-3 text-center font-semibold text-white transition-colors hover:bg-[#A8521F]"
+              className="mt-6 block w-full rounded-xl bg-[#C4622D] py-3 text-center font-semibold text-white transition-colors hover:bg-[#A8521F] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C4622D]"
             >
               Reservar
             </Link>

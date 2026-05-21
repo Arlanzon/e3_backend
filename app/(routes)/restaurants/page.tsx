@@ -75,12 +75,12 @@ export default function RestaurantsPage() {
               </p>
             </div>
 
-            <div className="w-fit rounded-full border border-[#E8E4DE] bg-white px-4 py-2 text-sm font-medium text-[#1A3A2A] shadow-sm">
+            <div className="w-fit max-w-full rounded-full border border-[#E8E4DE] bg-white px-4 py-2 text-sm font-medium text-[#1A3A2A] shadow-sm">
               {filtered.length} restaurantes encontrados
             </div>
           </div>
 
-          <div className="rounded-2xl border border-[#E8E4DE] bg-white p-4 shadow-sm">
+          <div className="rounded-2xl border border-[#E8E4DE] bg-white p-3 shadow-sm sm:p-4">
             <label htmlFor="restaurant-search" className="sr-only">
               Buscar restaurante
             </label>
@@ -90,7 +90,7 @@ export default function RestaurantsPage() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Buscar restaurante..."
-              className="w-full rounded-xl border border-[#E8E4DE] bg-[#FAFAF7] px-4 py-3 text-sm text-[#1C1C1C] outline-none transition placeholder:text-[#6B6B6B] focus:border-[#1A3A2A] focus:bg-white focus:ring-2 focus:ring-[#1A3A2A]/15"
+              className="w-full rounded-xl border border-[#E8E4DE] bg-[#FAFAF7] px-4 py-3 text-sm text-[#1A3A2A] outline-none transition placeholder:text-[#8A8A8A] focus:border-[#1A3A2A] focus:bg-white focus:ring-2 focus:ring-[#1A3A2A]/15"
             />
           </div>
         </section>
@@ -107,7 +107,7 @@ export default function RestaurantsPage() {
                 key={filter}
                 type="button"
                 onClick={() => setActiveFilter(filter)}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                className={`cursor-pointer rounded-full px-4 py-2 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1A3A2A] ${
                   isActive
                     ? 'bg-[#1A3A2A] text-white'
                     : 'border border-[#E8E4DE] bg-white text-[#6B6B6B] hover:border-[#C4622D] hover:text-[#1A3A2A]'
@@ -139,7 +139,7 @@ export default function RestaurantsPage() {
         ) : null}
 
         {!loading && !error && filtered.length > 0 ? (
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
             {filtered.map((r) => (
               <RestaurantCard
                 key={r.id}

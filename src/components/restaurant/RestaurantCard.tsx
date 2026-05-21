@@ -25,8 +25,8 @@ export default function RestaurantCard({
   featured = false,
 }: RestaurantCardProps) {
   return (
-    <article className="flex flex-col overflow-hidden rounded-2xl border border-[#E8E4DE] bg-white shadow-sm transition-shadow hover:shadow-md">
-      <div className="relative h-48 overflow-hidden bg-[#FAFAF7]">
+    <article className="flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-[#E8E4DE] bg-white shadow-sm transition-shadow hover:shadow-md">
+      <div className="relative aspect-[4/3] overflow-hidden bg-[#FAFAF7] sm:aspect-[16/11]">
         <Image
           src={photoUrl ?? fallbackPhotoUrl}
           alt={name}
@@ -45,10 +45,10 @@ export default function RestaurantCard({
         <p className="text-xs uppercase tracking-wide text-[#C4622D]">
           {cuisineType}
         </p>
-        <h3 className="mt-1 line-clamp-1 text-base font-semibold text-[#1A3A2A]">
+        <h3 className="mt-1 line-clamp-2 text-base font-semibold text-[#1A3A2A]">
           {name}
         </h3>
-        <p className="mt-2 line-clamp-1 text-sm text-[#6B6B6B]">
+        <p className="mt-2 line-clamp-2 text-sm text-[#6B6B6B]">
           <span aria-hidden="true">📍</span> {address}
         </p>
 
@@ -68,7 +68,7 @@ export default function RestaurantCard({
 
         <Link
           href={`/restaurants/${id}`}
-          className="mt-4 block w-full rounded-xl bg-[#1A3A2A] py-2 text-center text-sm font-medium text-white transition-colors hover:bg-[#2D5A3D]"
+          className="mt-auto block w-full rounded-xl bg-[#1A3A2A] py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-[#2D5A3D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1A3A2A]"
         >
           Ver detalle
         </Link>

@@ -14,7 +14,7 @@ export default function AuthCard({
   children,
 }: AuthCardProps) {
   return (
-    <section className="mx-auto w-full max-w-md rounded-2xl border border-[#E8E4DE] bg-white p-8 shadow-sm">
+    <section className="mx-auto w-full max-w-md rounded-2xl border border-[#E8E4DE] bg-white p-5 shadow-sm sm:p-8">
       <div className="space-y-3">
         <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#1A3A2A]">
           {eyebrow}

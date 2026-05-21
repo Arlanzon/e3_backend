@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense, type FormEvent, useEffect, useState } from 'react'
+import { Suspense, type FormEvent, useState } from 'react'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import PageContainer from '@/components/layout/PageContainer'
 import { createReservationApi } from '@/features/reservations/reservations.api'
 import { ApiError } from '@/lib/api-error'
@@ -56,18 +57,11 @@ function NewReservationContent() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
-  useEffect(() => {
-    if (!token) {
-      router.push('/login')
-    }
-  }, [router, token])
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
 
     if (!token) {
-      router.push('/login')
       return
     }
 
@@ -144,7 +138,7 @@ function NewReservationContent() {
 
       <form
         onSubmit={handleSubmit}
-        className="max-w-2xl space-y-5 rounded-lg border border-[#E8E4DE] bg-white p-6 shadow-sm"
+        className="max-w-2xl space-y-5 rounded-lg border border-[#E8E4DE] bg-white p-4 shadow-sm sm:p-6"
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1">
@@ -161,7 +155,7 @@ function NewReservationContent() {
               min={today}
               value={date}
               onChange={(event) => setDate(event.target.value)}
-              className="w-full rounded-lg border border-[#E8E4DE] bg-white px-4 py-2.5 text-sm text-[#1C1C1C] focus:outline-none focus:ring-2 focus:ring-[#1A3A2A]"
+              className="w-full rounded-lg border border-[#E8E4DE] bg-white px-4 py-2.5 text-sm text-[#1A3A2A] focus:outline-none focus:ring-2 focus:ring-[#1A3A2A]/20"
             />
           </div>
 
@@ -178,7 +172,7 @@ function NewReservationContent() {
               type="time"
               value={time}
               onChange={(event) => setTime(event.target.value)}
-              className="w-full rounded-lg border border-[#E8E4DE] bg-white px-4 py-2.5 text-sm text-[#1C1C1C] focus:outline-none focus:ring-2 focus:ring-[#1A3A2A]"
+              className="w-full rounded-lg border border-[#E8E4DE] bg-white px-4 py-2.5 text-sm text-[#1A3A2A] focus:outline-none focus:ring-2 focus:ring-[#1A3A2A]/20"
             />
           </div>
         </div>
@@ -195,7 +189,7 @@ function NewReservationContent() {
             name="numPersons"
             value={numPersons}
             onChange={(event) => setNumPersons(Number(event.target.value))}
-            className="w-full rounded-lg border border-[#E8E4DE] bg-white px-4 py-2.5 text-sm text-[#1C1C1C] focus:outline-none focus:ring-2 focus:ring-[#1A3A2A]"
+            className="w-full rounded-lg border border-[#E8E4DE] bg-white px-4 py-2.5 text-sm text-[#1A3A2A] focus:outline-none focus:ring-2 focus:ring-[#1A3A2A]/20"
           >
             {Array.from({ length: 20 }, (_, index) => index + 1).map(
               (option) => (
@@ -221,7 +215,7 @@ function NewReservationContent() {
             maxLength={500}
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
-            className="w-full rounded-lg border border-[#E8E4DE] bg-white px-4 py-2.5 text-sm text-[#1C1C1C] focus:outline-none focus:ring-2 focus:ring-[#1A3A2A]"
+            className="w-full rounded-lg border border-[#E8E4DE] bg-white px-4 py-2.5 text-sm text-[#1A3A2A] placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-[#1A3A2A]/20"
           />
         </div>
 
@@ -240,7 +234,7 @@ function NewReservationContent() {
         <button
           type="submit"
           disabled={loading || success}
-          className="w-full rounded-lg bg-[#1A3A2A] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#254C39] disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full rounded-lg bg-[#1A3A2A] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#254C39] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1A3A2A] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? 'Enviando...' : 'Confirmar reservación'}
         </button>
@@ -258,7 +252,9 @@ export default function NewReservationPage() {
         </div>
       }
     >
-      <NewReservationContent />
+      <ProtectedRoute>
+        <NewReservationContent />
+      </ProtectedRoute>
     </Suspense>
   )
 }

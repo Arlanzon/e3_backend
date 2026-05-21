@@ -1,10 +1,12 @@
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import PageContainer from '@/components/layout/PageContainer'
 import ManagerReservationsTable from '@/components/manager/ManagerReservationsTable'
 import { managerReservationsMock } from '@/features/reservations/data/manager-reservations'
 
 export default function ManagerReservationsPage() {
   return (
-    <PageContainer className="space-y-8">
+    <ProtectedRoute requiredRole="MANAGER">
+      <PageContainer className="space-y-8">
       <section className="space-y-3">
         <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#1A3A2A]">
           Manager
@@ -19,6 +21,7 @@ export default function ManagerReservationsPage() {
       </section>
 
       <ManagerReservationsTable reservations={managerReservationsMock} />
-    </PageContainer>
+      </PageContainer>
+    </ProtectedRoute>
   )
 }
