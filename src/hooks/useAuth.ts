@@ -16,5 +16,6 @@ export function useAuth() {
     isAuthenticated: store.isAuthenticated,
     login: store.login,
     logout: store.logout,
+    hydrate: store.hydrate,
   }
 }
