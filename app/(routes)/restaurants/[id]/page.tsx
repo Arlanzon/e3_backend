@@ -6,7 +6,6 @@ import type { Restaurant, Review } from '@/features/restaurants/types'
 import { DAY_LABELS } from '@/features/restaurants/types'
 import Image from 'next/image'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 
 type RestaurantDetailPageProps = {
   params: Promise<{
@@ -52,14 +51,41 @@ function ReviewCard({ review }: { review: Review }) {
   )
 }
 
+function RestaurantLoadError() {
+  return (
+    <main className="min-h-screen bg-[#FAFAF7] px-4 py-16 text-[#1C1C1C] sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-xl rounded-2xl border border-[#E8E4DE] bg-white p-8 text-center shadow-sm">
+        <h1 className="text-2xl font-bold text-[#1A3A2A]">
+          No pudimos cargar el restaurante
+        </h1>
+        <p className="mt-3 text-sm leading-6 text-[#6B6B6B]">
+          Intenta de nuevo en unos minutos.
+        </p>
+        <Link
+          href="/restaurants"
+          className="mt-6 inline-flex rounded-xl bg-[#C4622D] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#A8521F]"
+        >
+          Volver al listado
+        </Link>
+      </section>
+    </main>
+  )
+}
+
 export default async function RestaurantDetailPage({
   params,
 }: RestaurantDetailPageProps) {
   const { id } = await params
-  const restaurant = getRestaurantById(id)
+  let restaurant: Restaurant | null = null
+
+  try {
+    restaurant = getRestaurantById(id)
+  } catch {
+    return <RestaurantLoadError />
+  }
 
   if (!restaurant) {
-    notFound()
+    return <RestaurantLoadError />
   }
 
   const reviews = getReviewsByRestaurantId(id)
