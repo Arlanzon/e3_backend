@@ -1,5 +1,8 @@
 import { api } from '@/lib/api-client'
-import type { ApiRestaurantListResponse } from './api-types'
+import type {
+  ApiRestaurantDetailResponse,
+  ApiRestaurantListResponse,
+} from './api-types'
 
 export async function getRestaurantsApi(params?: {
   page?: number
@@ -15,4 +18,10 @@ export async function getRestaurantsApi(params?: {
   return api.get<ApiRestaurantListResponse>(
     `/restaurants${qs ? `?${qs}` : ''}`,
   )
+}
+
+export async function getRestaurantByIdApi(
+  id: string,
+): Promise<ApiRestaurantDetailResponse> {
+  return api.get<ApiRestaurantDetailResponse>(`/restaurants/${id}`)
 }
