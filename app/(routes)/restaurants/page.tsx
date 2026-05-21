@@ -1,11 +1,12 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { mockRestaurants } from '@/features/restaurants/data/restaurants'
+import { useEffect, useMemo, useState } from 'react'
+import { getRestaurantsApi } from '@/features/restaurants/restaurants.api'
+import type { ApiRestaurant } from '@/features/restaurants/api-types'
 import RestaurantCard from '@/components/restaurant/RestaurantCard'
 import EmptyState from '@/components/ui/EmptyState'
 
-const cuisineFilters = [
+const FILTERS = [
   'Todos',
   'Comida Tradicional',
   'Cafetería',
@@ -15,35 +16,47 @@ const cuisineFilters = [
   'Carnes',
 ]
 
-const normalizeText = (value: string) =>
-  value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-
 export default function RestaurantsPage() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCuisine, setSelectedCuisine] = useState('Todos')
+  const [restaurants, setRestaurants] = useState<ApiRestaurant[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
+  const [activeFilter, setActiveFilter] = useState('Todos')
 
-  const filteredRestaurants = useMemo(() => {
-    const normalizedSearch = normalizeText(searchTerm.trim())
-    const normalizedCuisine = normalizeText(selectedCuisine)
+  useEffect(() => {
+    async function fetchRestaurants() {
+      try {
+        setLoading(true)
+        setError(null)
+        const params: { cuisine?: string } = {}
+        if (activeFilter !== 'Todos') {
+          params.cuisine = activeFilter
+        }
+        const response = await getRestaurantsApi({
+          page: 1,
+          limit: 20,
+          ...params,
+        })
+        setRestaurants(response.data)
+      } catch {
+        setError('No pudimos cargar los restaurantes. Intenta de nuevo.')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchRestaurants()
+  }, [activeFilter])
 
-    return mockRestaurants.filter((restaurant) => {
-      const matchesCuisine =
-        selectedCuisine === 'Todos' ||
-        normalizeText(restaurant.cuisineType) === normalizedCuisine
-
-      const searchableText = normalizeText(
-        `${restaurant.name} ${restaurant.cuisineType} ${restaurant.address}`,
-      )
-      const matchesSearch =
-        normalizedSearch.length === 0 ||
-        searchableText.includes(normalizedSearch)
-
-      return matchesCuisine && matchesSearch
-    })
-  }, [searchTerm, selectedCuisine])
+  const filtered = useMemo(() => {
+    if (!search.trim()) return restaurants
+    const q = search.toLowerCase()
+    return restaurants.filter(
+      (r) =>
+        r.name.toLowerCase().includes(q) ||
+        r.cuisineType.toLowerCase().includes(q) ||
+        r.address.toLowerCase().includes(q),
+    )
+  }, [restaurants, search])
 
   return (
     <main className="min-h-screen bg-[#FAFAF7] px-4 py-10 text-[#1C1C1C] sm:px-6 lg:px-8">
@@ -63,7 +76,7 @@ export default function RestaurantsPage() {
             </div>
 
             <div className="w-fit rounded-full border border-[#E8E4DE] bg-white px-4 py-2 text-sm font-medium text-[#1A3A2A] shadow-sm">
-              {filteredRestaurants.length} restaurantes encontrados
+              {filtered.length} restaurantes encontrados
             </div>
           </div>
 
@@ -74,8 +87,8 @@ export default function RestaurantsPage() {
             <input
               id="restaurant-search"
               type="search"
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
               placeholder="Buscar restaurante..."
               className="w-full rounded-xl border border-[#E8E4DE] bg-[#FAFAF7] px-4 py-3 text-sm text-[#1C1C1C] outline-none transition placeholder:text-[#6B6B6B] focus:border-[#1A3A2A] focus:bg-white focus:ring-2 focus:ring-[#1A3A2A]/15"
             />
@@ -86,18 +99,18 @@ export default function RestaurantsPage() {
           className="flex flex-wrap gap-3"
           aria-label="Filtros por tipo de cocina"
         >
-          {cuisineFilters.map((filter) => {
-            const isActive = selectedCuisine === filter
+          {FILTERS.map((filter) => {
+            const isActive = activeFilter === filter
 
             return (
               <button
                 key={filter}
                 type="button"
-                onClick={() => setSelectedCuisine(filter)}
-                className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                onClick={() => setActiveFilter(filter)}
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
                   isActive
-                    ? 'border-[#1A3A2A] bg-[#1A3A2A] text-white shadow-sm'
-                    : 'border-[#E8E4DE] bg-white text-[#6B6B6B] hover:border-[#C4622D] hover:text-[#1A3A2A]'
+                    ? 'bg-[#1A3A2A] text-white'
+                    : 'border border-[#E8E4DE] bg-white text-[#6B6B6B] hover:border-[#C4622D] hover:text-[#1A3A2A]'
                 }`}
               >
                 {filter}
@@ -106,33 +119,49 @@ export default function RestaurantsPage() {
           })}
         </section>
 
-        {filteredRestaurants.length > 0 ? (
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredRestaurants.map((restaurant) => (
-              <RestaurantCard
-                key={restaurant.id}
-                id={restaurant.id}
-                name={restaurant.name}
-                cuisineType={restaurant.cuisineType}
-                address={restaurant.address}
-                ratingAvg={restaurant.ratingAvg}
-                ratingCount={restaurant.ratingCount}
-                photoUrl={
-                  restaurant.photos?.find((photo) => photo.isPrimary)?.url ??
-                  restaurant.photos?.[0]?.url
-                }
-                featured={false}
-              />
-            ))}
-          </section>
-        ) : (
+        {loading ? (
+          <p className="text-sm text-[#6B6B6B]">Cargando restaurantes...</p>
+        ) : null}
+
+        {error ? (
+          <p className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {error}
+          </p>
+        ) : null}
+
+        {!loading && !error && filtered.length === 0 ? (
           <section className="rounded-2xl border border-[#E8E4DE] bg-white shadow-sm">
             <EmptyState
               title="No encontramos restaurantes"
               description="Intenta con otro filtro o búsqueda"
             />
           </section>
-        )}
+        ) : null}
+
+        {!loading && !error && filtered.length > 0 ? (
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filtered.map((r) => (
+              <RestaurantCard
+                key={r.id}
+                id={r.id}
+                name={r.name}
+                cuisineType={r.cuisineType}
+                address={r.address}
+                ratingAvg={
+                  r.ratingAvg === null
+                    ? null
+                    : typeof r.ratingAvg === 'number'
+                      ? r.ratingAvg
+                      : Number.parseFloat(String(r.ratingAvg))
+                }
+                ratingCount={r.ratingCount}
+                photoUrl={
+                  r.photos?.find((p) => p.isPrimary)?.url ?? r.photos?.[0]?.url
+                }
+              />
+            ))}
+          </section>
+        ) : null}
       </div>
     </main>
   )
