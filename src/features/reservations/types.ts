@@ -37,6 +37,9 @@ export interface Reservation {
   rejectionReason: string | null
   confirmedAt: string | null
   cancelledAt: string | null
+  completedAt: string | null
+  expiredAt: string | null
+  rejectedAt: string | null
   createdAt: string
 }
 

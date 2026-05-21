@@ -14,6 +14,9 @@ export const mockReservations: Reservation[] = [
     rejectionReason: null,
     confirmedAt: '2026-05-18T17:30:00.000Z',
     cancelledAt: null,
+    completedAt: null,
+    expiredAt: null,
+    rejectedAt: null,
     createdAt: '2026-05-18T16:45:00.000Z',
   },
   {
@@ -29,6 +32,9 @@ export const mockReservations: Reservation[] = [
     rejectionReason: null,
     confirmedAt: null,
     cancelledAt: null,
+    completedAt: null,
+    expiredAt: null,
+    rejectedAt: null,
     createdAt: '2026-05-19T14:20:00.000Z',
   },
   {
@@ -44,6 +50,9 @@ export const mockReservations: Reservation[] = [
     rejectionReason: null,
     confirmedAt: '2026-05-09T18:00:00.000Z',
     cancelledAt: null,
+    completedAt: '2026-05-10T15:30:00.000Z',
+    expiredAt: null,
+    rejectedAt: null,
     createdAt: '2026-05-09T17:25:00.000Z',
   },
   {
@@ -59,6 +68,9 @@ export const mockReservations: Reservation[] = [
     rejectionReason: null,
     confirmedAt: '2026-05-03T19:10:00.000Z',
     cancelledAt: '2026-05-04T12:30:00.000Z',
+    completedAt: null,
+    expiredAt: null,
+    rejectedAt: null,
     createdAt: '2026-05-03T18:45:00.000Z',
   },
   {
@@ -74,6 +86,9 @@ export const mockReservations: Reservation[] = [
     rejectionReason: 'No tenemos disponibilidad para ese horario',
     confirmedAt: null,
     cancelledAt: null,
+    completedAt: null,
+    expiredAt: null,
+    rejectedAt: '2026-05-07T10:45:00.000Z',
     createdAt: '2026-05-07T10:15:00.000Z',
   },
 ]

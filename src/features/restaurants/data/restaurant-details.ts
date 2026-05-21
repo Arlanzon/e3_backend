@@ -90,6 +90,8 @@ export const mockReviews: Record<string, Review[]> = {
       rating: 5,
       comment:
         'El mole negro tiene un sabor profundo y las tortillas salen calientitas. Se siente como comer en una casa oaxaquena de verdad.',
+      status: 'VISIBLE',
+      editableUntil: '2026-12-31T23:59:59.000Z',
       createdAt: '2026-05-03T20:10:00.000Z',
       response: {
         id: `${firstRestaurant.id}-response-1`,
@@ -106,6 +108,8 @@ export const mockReviews: Record<string, Review[]> = {
       rating: 5,
       comment:
         'Pedimos tasajo, memelas y chocolate de agua. Todo llego bien servido y con ese sazoncito tradicional que uno busca en Oaxaca.',
+      status: 'VISIBLE',
+      editableUntil: '2026-12-31T23:59:59.000Z',
       createdAt: '2026-05-06T18:45:00.000Z',
       response: null,
     },
@@ -116,6 +120,8 @@ export const mockReviews: Record<string, Review[]> = {
       rating: 4,
       comment:
         'Muy buena comida y atencion amable. Las enmoladas estaban excelentes; solo nos hubiera gustado mas variedad de aguas frescas.',
+      status: 'VISIBLE',
+      editableUntil: '2026-12-31T23:59:59.000Z',
       createdAt: '2026-05-09T21:20:00.000Z',
       response: null,
     },
