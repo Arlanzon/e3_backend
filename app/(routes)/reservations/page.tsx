@@ -40,6 +40,8 @@ function mapApiReservation(reservation: ApiReservation): Reservation {
 export default function ReservationsPage() {
   const router = useRouter()
   const token = useAuthStore((state) => state.token)
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const hasHydrated = useAuthStore((state) => state.hasHydrated)
   const [reservations, setReservations] = useState<ApiReservation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -47,7 +49,9 @@ export default function ReservationsPage() {
   const [cancelError, setCancelError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!token) {
+    if (!hasHydrated) return
+
+    if (!token || !isAuthenticated) {
       router.push('/login')
       return
     }
@@ -88,7 +92,7 @@ export default function ReservationsPage() {
     return () => {
       active = false
     }
-  }, [router, token])
+  }, [hasHydrated, isAuthenticated, router, token])
 
   const reservationCards = reservations.map(mapApiReservation)
 
@@ -135,19 +139,25 @@ export default function ReservationsPage() {
         </Link>
       </div>
 
-      {loading ? (
+      {!hasHydrated ? (
+        <section className="rounded-lg border border-[#E8E4DE] bg-white px-6 py-10 text-sm font-medium text-[#1A3A2A]">
+          Validando sesión...
+        </section>
+      ) : null}
+
+      {hasHydrated && loading ? (
         <section className="rounded-lg border border-[#E8E4DE] bg-white px-6 py-10 text-sm font-medium text-[#1A3A2A]">
           Cargando reservaciones...
         </section>
       ) : null}
 
-      {!loading && error ? (
+      {hasHydrated && !loading && error ? (
         <section className="rounded-lg border border-red-200 bg-red-50 px-6 py-4 text-sm font-medium text-red-700">
           {error}
         </section>
       ) : null}
 
-      {!loading && !error && reservations.length === 0 ? (
+      {hasHydrated && !loading && !error && reservations.length === 0 ? (
         <section className="rounded-lg border border-[#E8E4DE] bg-white">
           <EmptyState
             title="No tienes reservaciones"
@@ -164,7 +174,7 @@ export default function ReservationsPage() {
         </section>
       ) : null}
 
-      {!loading && !error && reservationCards.length > 0 ? (
+      {hasHydrated && !loading && !error && reservationCards.length > 0 ? (
         <>
           {cancelError && (
             <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 mb-4">
