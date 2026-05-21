@@ -1,5 +1,6 @@
 import { api } from '@/lib/api-client'
 import type {
+  ApiReservation,
   CreateReservationBody,
   ApiCreateReservationResponse,
   ApiReservationListResponse,
@@ -31,6 +32,17 @@ export async function getMyReservationsApi(
   const qs = query.toString()
   return api.get<ApiReservationListResponse>(
     `/reservations${qs ? `?${qs}` : ''}`,
+    token,
+  )
+}
+
+export async function cancelReservationApi(
+  id: string,
+  token: string,
+): Promise<{ success: boolean; data: ApiReservation }> {
+  return api.patch<{ success: boolean; data: ApiReservation }>(
+    `/reservations/${id}/cancel`,
+    {},
     token,
   )
 }

@@ -8,7 +8,10 @@ import ReservationCard from '@/components/reservation/ReservationCard'
 import ReservationsHeader from '@/components/reservation/ReservationsHeader'
 import EmptyState from '@/components/ui/EmptyState'
 import type { ApiReservation } from '@/features/reservations/api-types'
-import { getMyReservationsApi } from '@/features/reservations/reservations.api'
+import {
+  cancelReservationApi,
+  getMyReservationsApi,
+} from '@/features/reservations/reservations.api'
 import type { Reservation } from '@/features/reservations/types'
 import { ApiError } from '@/lib/api-error'
 import { useAuthStore } from '@/store/auth.store'
@@ -40,6 +43,8 @@ export default function ReservationsPage() {
   const [reservations, setReservations] = useState<ApiReservation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [cancelling, setCancelling] = useState<string | null>(null)
+  const [cancelError, setCancelError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!token) {
@@ -87,6 +92,36 @@ export default function ReservationsPage() {
 
   const reservationCards = reservations.map(mapApiReservation)
 
+  async function handleCancel(id: string) {
+    if (!token) return
+
+    try {
+      setCancelling(id)
+      setCancelError(null)
+      await cancelReservationApi(id, token)
+      const response = await getMyReservationsApi(token, {
+        page: 1,
+        limit: 20,
+      })
+      setReservations(response.data)
+    } catch (err) {
+      if (err instanceof ApiError) {
+        const messages: Record<string, string> = {
+          INVALID_STATUS: 'Esta reservación no se puede cancelar',
+          CANCELLATION_TOO_LATE:
+            'No puedes cancelar con menos de 2 horas de anticipación',
+          FORBIDDEN: 'No tienes permiso para cancelar esta reservación',
+          RESERVATION_NOT_FOUND: 'Reservación no encontrada',
+        }
+        setCancelError(messages[err.message] ?? err.message)
+      } else {
+        setCancelError('No pudimos cancelar. Intenta de nuevo.')
+      }
+    } finally {
+      setCancelling(null)
+    }
+  }
+
   return (
     <PageContainer className="space-y-8 bg-[#FAFAF7]">
       <ReservationsHeader total={reservations.length} />
@@ -130,11 +165,33 @@ export default function ReservationsPage() {
       ) : null}
 
       {!loading && !error && reservationCards.length > 0 ? (
-        <section className="grid gap-4">
-          {reservationCards.map((reservation) => (
-            <ReservationCard key={reservation.id} reservation={reservation} />
-          ))}
-        </section>
+        <>
+          {cancelError && (
+            <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 mb-4">
+              {cancelError}
+            </p>
+          )}
+
+          <section className="grid gap-4">
+            {reservationCards.map((reservation) => (
+              <ReservationCard
+                key={reservation.id}
+                reservation={reservation}
+                onCancel={
+                  reservation.status === 'CONFIRMED'
+                    ? () => handleCancel(reservation.id)
+                    : undefined
+                }
+                cancelDisabled={cancelling === reservation.id}
+                cancelLabel={
+                  cancelling === reservation.id
+                    ? 'Cancelando...'
+                    : 'Cancelar reservación'
+                }
+              />
+            ))}
+          </section>
+        </>
       ) : null}
     </PageContainer>
   )
