@@ -18,7 +18,7 @@ export default function ReservationsHeader({ total }: ReservationsHeaderProps) {
             visita.
           </p>
         </div>
-        <div className="rounded-full border border-[#E8E4DE] bg-white px-4 py-2 text-sm text-[#6B6B6B]">
+        <div className="w-fit rounded-full border border-[#E8E4DE] bg-white px-4 py-2 text-sm text-[#6B6B6B]">
           {total} reservaciones
         </div>
       </div>

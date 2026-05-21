@@ -26,8 +26,10 @@ export default function Input({
       <input
         id={inputId}
         className={[
-          'w-full rounded-lg border px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A3A2A]',
-          error ? 'border-red-400 bg-red-50' : 'border-[#E8E4DE] bg-white',
+          'w-full rounded-lg border px-4 py-2.5 text-sm text-[#1A3A2A] placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-[#1A3A2A]/20',
+          error
+            ? 'border-red-400 bg-red-50'
+            : 'border-[#E8E4DE] bg-white focus:border-[#1A3A2A]',
           className,
         ]
           .filter(Boolean)

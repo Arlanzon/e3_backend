@@ -1,20 +1,87 @@
-import {
-  getRestaurantById,
-  getReviewsByRestaurantId,
-} from '@/features/restaurants/data/restaurant-details'
-import type { Restaurant, Review } from '@/features/restaurants/types'
-import { DAY_LABELS } from '@/features/restaurants/types'
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
-
-type RestaurantDetailPageProps = {
-  params: Promise<{
-    id: string
-  }>
-}
+import { useParams } from 'next/navigation'
+import { useEffect, useMemo, useState } from 'react'
+import { getReviewsByRestaurantId } from '@/features/restaurants/data/restaurant-details'
+import { getRestaurantByIdApi } from '@/features/restaurants/restaurants.api'
+import type { ApiRestaurant } from '@/features/restaurants/api-types'
+import type { BusinessHour, Restaurant, Review } from '@/features/restaurants/types'
+import { DAY_LABELS } from '@/features/restaurants/types'
 
 const fallbackPhotoUrl = '/images/restaurants/fallback-restaurant.png'
+
+function minutesToTime(minutes: number | undefined): string {
+  if (typeof minutes !== 'number') return '00:00'
+
+  const hours = Math.floor(minutes / 60)
+    .toString()
+    .padStart(2, '0')
+  const mins = (minutes % 60).toString().padStart(2, '0')
+
+  return `${hours}:${mins}`
+}
+
+function toNumber(value: number | string | undefined, fallback = 0): number {
+  if (typeof value === 'number') return value
+  if (typeof value === 'string') {
+    const parsed = Number.parseFloat(value)
+    return Number.isNaN(parsed) ? fallback : parsed
+  }
+
+  return fallback
+}
+
+function mapBusinessHour(
+  businessHour: NonNullable<ApiRestaurant['businessHours']>[number],
+): BusinessHour {
+  return {
+    id: businessHour.id,
+    dayOfWeek: businessHour.dayOfWeek,
+    openTime:
+      businessHour.openTime ?? minutesToTime(businessHour.openTimeMin),
+    closeTime:
+      businessHour.closeTime ?? minutesToTime(businessHour.closeTimeMin),
+    isClosed: businessHour.isClosed,
+  }
+}
+
+function mapApiRestaurant(restaurant: ApiRestaurant): Restaurant {
+  const rating =
+    restaurant.ratingAvg === null
+      ? null
+      : typeof restaurant.ratingAvg === 'number'
+        ? restaurant.ratingAvg
+        : Number.parseFloat(String(restaurant.ratingAvg))
+
+  return {
+    id: restaurant.id,
+    name: restaurant.name,
+    slug: restaurant.slug,
+    description: restaurant.description ?? null,
+    cuisineType: restaurant.cuisineType,
+    address: restaurant.address,
+    lat: toNumber(restaurant.lat),
+    lng: toNumber(restaurant.lng),
+    phone: restaurant.phone ?? null,
+    capacity: restaurant.capacity ?? 0,
+    reservationCapacityFactor: toNumber(
+      restaurant.reservationCapacityFactor,
+      0.7,
+    ),
+    reservationDurationMin: restaurant.reservationDurationMin ?? 90,
+    minAdvanceHours: restaurant.minAdvanceHours ?? 2,
+    maxAdvanceDays: restaurant.maxAdvanceDays ?? 30,
+    timezone: restaurant.timezone ?? 'America/Mexico_City',
+    status: restaurant.status,
+    ratingAvg: rating,
+    ratingCount: restaurant.ratingCount,
+    createdAt: restaurant.createdAt,
+    photos: restaurant.photos,
+    businessHours: restaurant.businessHours?.map(mapBusinessHour),
+  }
+}
 
 function getPrimaryPhotoUrl(restaurant: Restaurant): string {
   return (
@@ -52,22 +119,94 @@ function ReviewCard({ review }: { review: Review }) {
   )
 }
 
-export default async function RestaurantDetailPage({
-  params,
-}: RestaurantDetailPageProps) {
-  const { id } = await params
-  const restaurant = getRestaurantById(id)
+function RestaurantLoadError() {
+  return (
+    <main className="min-h-screen bg-[#FAFAF7] px-4 py-16 text-[#1C1C1C] sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-xl rounded-2xl border border-[#E8E4DE] bg-white p-8 text-center shadow-sm">
+        <h1 className="text-2xl font-bold text-[#1A3A2A]">
+          No pudimos cargar el restaurante
+        </h1>
+        <p className="mt-3 text-sm leading-6 text-[#6B6B6B]">
+          Intenta de nuevo en unos minutos.
+        </p>
+        <Link
+          href="/restaurants"
+          className="mt-6 inline-flex rounded-xl bg-[#C4622D] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#A8521F]"
+        >
+          Volver al listado
+        </Link>
+      </section>
+    </main>
+  )
+}
 
-  if (!restaurant) {
-    notFound()
+export default function RestaurantDetailPage() {
+  const params = useParams<{ id: string | string[] }>()
+  const id = Array.isArray(params.id) ? params.id[0] : params.id
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!id) {
+      setError('missing-id')
+      setLoading(false)
+      return
+    }
+
+    let active = true
+
+    async function loadRestaurant() {
+      try {
+        setLoading(true)
+        setError(null)
+        const response = await getRestaurantByIdApi(id)
+
+        if (active) {
+          setRestaurant(mapApiRestaurant(response.data))
+        }
+      } catch {
+        if (active) {
+          setError('load-error')
+          setRestaurant(null)
+        }
+      } finally {
+        if (active) {
+          setLoading(false)
+        }
+      }
+    }
+
+    loadRestaurant()
+
+    return () => {
+      active = false
+    }
+  }, [id])
+
+  const reviews = useMemo(
+    () => (id ? getReviewsByRestaurantId(id) : []),
+    [id],
+  )
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-[#FAFAF7] px-4 py-16 text-sm font-medium text-[#1A3A2A] sm:px-6 lg:px-8">
+        Cargando restaurante...
+      </main>
+    )
   }
 
-  const reviews = getReviewsByRestaurantId(id)
+  if (error || !restaurant) {
+    return <RestaurantLoadError />
+  }
+
   const mainPhotoUrl = getPrimaryPhotoUrl(restaurant)
+  const rating = restaurant.ratingAvg
 
   return (
     <main className="min-h-screen bg-[#FAFAF7] text-[#1C1C1C]">
-      <section className="relative h-[400px] overflow-hidden">
+      <section className="relative h-[340px] overflow-hidden sm:h-[400px]">
         <Image
           src={mainPhotoUrl}
           alt={restaurant.name}
@@ -83,14 +222,14 @@ export default async function RestaurantDetailPage({
             <span className="inline-flex rounded-full bg-[#C4622D] px-3 py-1 text-xs font-semibold text-white">
               {restaurant.cuisineType}
             </span>
-            <h1 className="mt-4 text-4xl font-bold text-white">
+            <h1 className="mt-4 break-words text-3xl font-bold text-white sm:text-4xl">
               {restaurant.name}
             </h1>
 
             <div className="mt-3 flex flex-col gap-2 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
-              {restaurant.ratingAvg !== null ? (
+              {rating !== null ? (
                 <p className="font-medium text-white">
-                  <span aria-hidden="true">★</span> {restaurant.ratingAvg.toFixed(1)} (
+                  <span aria-hidden="true">★</span> {rating.toFixed(1)} (
                   {restaurant.ratingCount} reseñas)
                 </p>
               ) : null}
@@ -105,7 +244,7 @@ export default async function RestaurantDetailPage({
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Link
           href="/restaurants"
-          className="text-sm font-medium text-[#1A3A2A] hover:underline"
+          className="text-sm font-medium text-[#1A3A2A] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1A3A2A]"
         >
           ← Volver al listado
         </Link>
@@ -126,13 +265,13 @@ export default async function RestaurantDetailPage({
                 Información
               </h2>
               <div className="mt-4 grid gap-4 sm:grid-cols-3">
-                <p className="rounded-xl bg-[#FAFAF7] p-4 text-sm text-[#1C1C1C]">
+                <p className="min-w-0 break-words rounded-xl bg-[#FAFAF7] p-4 text-sm text-[#1C1C1C]">
                   👥 {restaurant.capacity} personas
                 </p>
-                <p className="rounded-xl bg-[#FAFAF7] p-4 text-sm text-[#1C1C1C]">
-                  📞 {restaurant.phone ?? 'No disponible'}
+                <p className="min-w-0 break-words rounded-xl bg-[#FAFAF7] p-4 text-sm text-[#1C1C1C]">
+                  ☎ {restaurant.phone ?? 'No disponible'}
                 </p>
-                <p className="rounded-xl bg-[#FAFAF7] p-4 text-sm text-[#1C1C1C]">
+                <p className="min-w-0 break-words rounded-xl bg-[#FAFAF7] p-4 text-sm text-[#1C1C1C]">
                   ⏱ {restaurant.reservationDurationMin} minutos
                 </p>
               </div>
@@ -147,7 +286,7 @@ export default async function RestaurantDetailPage({
                   {restaurant.businessHours.map((businessHour) => (
                     <div
                       key={businessHour.id}
-                      className="flex items-center justify-between gap-4 py-3 text-sm"
+                      className="flex flex-col gap-1 py-3 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4"
                     >
                       <span className="font-medium text-[#1C1C1C]">
                         {DAY_LABELS[businessHour.dayOfWeek]}
@@ -156,7 +295,7 @@ export default async function RestaurantDetailPage({
                         <span className="text-red-500">Cerrado</span>
                       ) : (
                         <span className="text-[#1C1C1C]">
-                          {businessHour.openTime} — {businessHour.closeTime}
+                          {businessHour.openTime} - {businessHour.closeTime}
                         </span>
                       )}
                     </div>
@@ -183,7 +322,7 @@ export default async function RestaurantDetailPage({
             </section>
           </div>
 
-          <aside className="rounded-2xl border border-[#E8E4DE] bg-white p-6 shadow-sm lg:sticky lg:top-6 lg:col-span-1">
+          <aside className="rounded-2xl border border-[#E8E4DE] bg-white p-5 shadow-sm sm:p-6 lg:sticky lg:top-28 lg:col-span-1">
             <h2 className="text-xl font-semibold text-[#1A3A2A]">
               Hacer una reservación
             </h2>
@@ -204,7 +343,7 @@ export default async function RestaurantDetailPage({
 
             <Link
               href={`/reservations/new?restaurantId=${restaurant.id}`}
-              className="mt-6 block w-full rounded-xl bg-[#C4622D] py-3 text-center font-semibold text-white transition-colors hover:bg-[#A8521F]"
+              className="mt-6 block w-full rounded-xl bg-[#C4622D] py-3 text-center font-semibold text-white transition-colors hover:bg-[#A8521F] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C4622D]"
             >
               Reservar
             </Link>

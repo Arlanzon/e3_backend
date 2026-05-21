@@ -40,10 +40,10 @@ export default function Button({
   return (
     <button
       className={[
-        'rounded-lg font-medium transition-colors',
+        'rounded-lg font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1A3A2A]',
         variantClasses[variant],
         sizeClasses[size],
-        isDisabled ? 'cursor-not-allowed opacity-50' : '',
+        isDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
         className,
       ]
         .filter(Boolean)

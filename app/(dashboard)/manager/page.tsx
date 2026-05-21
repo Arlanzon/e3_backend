@@ -1,3 +1,4 @@
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import PageContainer from '@/components/layout/PageContainer'
 import ManagerStatCard from '@/components/manager/ManagerStatCard'
 import { buildManagerKpis } from '@/features/reservations/data/manager-kpis'
@@ -26,7 +27,8 @@ const stats = [
 
 export default function ManagerDashboardPage() {
   return (
-    <PageContainer className="space-y-8">
+    <ProtectedRoute requiredRole="MANAGER">
+      <PageContainer className="space-y-8">
       <section className="space-y-3">
         <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#1A3A2A]">
           Manager
@@ -45,6 +47,7 @@ export default function ManagerDashboardPage() {
           <ManagerStatCard key={item.label} label={item.label} value={item.value} />
         ))}
       </section>
-    </PageContainer>
+      </PageContainer>
+    </ProtectedRoute>
   )
 }

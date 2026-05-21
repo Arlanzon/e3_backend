@@ -62,6 +62,8 @@ export interface Review {
   userName: string
   rating: number
   comment: string | null
+  status: 'VISIBLE' | 'PENDING_MODERATION' | 'HIDDEN'
+  editableUntil: string
   createdAt: string
   response?: ReviewResponse | null
 }
