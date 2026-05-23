@@ -630,3 +630,31 @@ http://localhost:3000/api/v1
 
 Swagger UI permite usar el token emitido por `POST /api/v1/auth/login` como
 `Authorization: Bearer <token>`.
+
+## Despliegue en Producción
+
+El proyecto está desplegado en Vercel como una aplicación Next.js de monolito
+modular. El frontend y el backend viven dentro de la misma app: las páginas y
+componentes React se sirven desde Next.js, y la API se expone mediante Route
+Handlers bajo `/api/v1`.
+
+La base de datos está alojada en Neon PostgreSQL y se consume desde la capa de
+persistencia mediante Prisma. El despliegue se realiza automáticamente mediante
+la integración entre GitHub y Vercel, siguiendo una estrategia incremental:
+feature branches → Pull Request → merge → deploy automático.
+
+Enlaces de producción:
+
+- Producción: https://e3-backend-steel.vercel.app
+- Swagger/OpenAPI: https://e3-backend-steel.vercel.app/api/v1/docs/ui
+
+### ¿Por qué Vercel?
+
+Vercel fue elegido por su integración nativa con Next.js, generación automática
+de previews por Pull Request, despliegue simplificado desde GitHub y modelo
+serverless adecuado para un MVP académico. Esta configuración reduce la carga
+operativa inicial y permite publicar cambios de forma controlada sin agregar
+infraestructura innecesaria.
+
+Docker quedó preparado para despliegues externos futuros. Actualmente, el flujo
+principal de producción despliega directamente desde GitHub hacia Vercel.
