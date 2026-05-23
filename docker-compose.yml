@@ -1,0 +1,13 @@
+services:
+  app:
+    build:
+      context: .
+    container_name: plataforma-gastronomica-app
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
+    # La base de datos esta en Neon PostgreSQL y se conecta mediante DATABASE_URL.
