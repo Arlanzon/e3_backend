@@ -516,6 +516,79 @@ La estrategia incremental permite evolucionar el monolito modular por capas y
 por funcionalidades, reduciendo el riesgo de cambios grandes y facilitando la
 revision tecnica antes de publicar una nueva version.
 
+## Testing
+
+El proyecto utiliza Vitest como herramienta de testing, configurada en
+`vitest.config.ts` con entorno `node` y resolucion de aliases mediante
+`vite-tsconfig-paths`. La suite esta organizada bajo `src/__tests__` y separa
+pruebas unitarias de pruebas de integracion.
+
+Las pruebas unitarias validan piezas aisladas de la aplicacion, como objetos de
+error, schemas Zod y utilidades puras. Las pruebas de integracion validan el
+comportamiento de Route Handlers de Next.js simulando peticiones HTTP con
+`NextRequest` y usando mocks para dependencias externas como Prisma, JWT o
+`bcryptjs`.
+
+Esta estrategia permite verificar logica de negocio, contratos de entrada,
+errores controlados y endpoints principales sin depender de una base de datos
+real durante la ejecucion de la suite. Los tests ayudan a prevenir regresiones
+y a comprobar que la API conserva el comportamiento esperado ante cambios
+incrementales.
+
+### Ejecucion
+
+```bash
+npm test
+npm run test:watch
+npm run test:coverage
+```
+
+| Script | Uso |
+| --- | --- |
+| `npm test` | Ejecuta la suite una vez con `vitest run`. |
+| `npm run test:watch` | Ejecuta Vitest en modo observacion durante desarrollo. |
+| `npm run test:coverage` | Ejecuta la suite con reporte de cobertura usando `@vitest/coverage-v8`. |
+
+### Estructura
+
+```text
+src/__tests__/
+├── unit/
+└── integration/
+```
+
+`unit` contiene pruebas de logica aislada, schemas, errores y utilidades sin
+dependencias externas. `integration` contiene pruebas orientadas a endpoints y
+al flujo HTTP de la API mediante Route Handlers de Next.js.
+
+### Pruebas Implementadas
+
+| Tipo | Archivo | Que valida |
+| --- | --- | --- |
+| Unitario | `src/__tests__/unit/errors.test.ts` | Manejo de `AppError` e `isAppError`. |
+| Unitario | `src/__tests__/unit/reviews.schema.test.ts` | Validaciones Zod de resenas. |
+| Unitario | `src/__tests__/unit/time.test.ts` | Utilidades y logica de tiempo. |
+| Integracion | `src/__tests__/integration/auth.login.test.ts` | Login y respuestas HTTP. |
+| Integracion | `src/__tests__/integration/auth.register.test.ts` | Registro y validacion. |
+| Integracion | `src/__tests__/integration/restaurants.list.test.ts` | Listado de restaurantes. |
+
+### Estrategia
+
+Los tests de integracion usan Route Handlers reales de Next.js para validar el
+comportamiento de endpoints sin levantar un servidor HTTP externo. Las
+dependencias externas, como Prisma, JWT o `bcryptjs`, se mockean para evitar
+tocar Neon PostgreSQL real durante la ejecucion de pruebas.
+
+La suite valida status HTTP, estructura JSON de respuesta, validaciones de
+entrada y manejo de errores controlados. Los tests unitarios, por su parte,
+prueban modulos aislados y funciones puras para comprobar comportamiento
+determinista sin I/O externo.
+
+### Resultados
+
+`npm test` ejecuta correctamente la suite actual. `npx tsc --noEmit` pasa sin
+errores. `npm run build` compila correctamente el proyecto.
+
 ## Instalacion y Ejecucion
 
 ```bash
